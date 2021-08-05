@@ -7,6 +7,7 @@ export class Err<E> {
 }
 
 type ParseFn<T, E> = (s: string) => Ok<T> | Err<E>;
+type Apply<A, B> = A extends (b: B) => infer C ? C : never;
 
 export class Parser<T, E = Error> {
   constructor(public parse: ParseFn<T, E>) {}
@@ -24,6 +25,38 @@ export class Parser<T, E = Error> {
       const res = this.parse(s);
       if (res instanceof Ok) return res;
       return next().parse(s);
+    });
+  }
+
+  public apl<U, E1>(next: Parser<U, E1>) {
+    return new Parser<T, E | E1>((s) => {
+      const left = this.parse(s);
+      if (left instanceof Err) return left;
+      const right = next.parse(left.next);
+      if (right instanceof Err) return right;
+      return new Ok(left.value, right.next);
+    });
+  }
+
+  public apr<U, E1>(next: Parser<U, E1>) {
+    return new Parser<U, E | E1>((s) => {
+      const left = this.parse(s);
+      if (left instanceof Err) return left;
+      const right = next.parse(left.next);
+      if (right instanceof Err) return right;
+      return new Ok(right.value, right.next);
+    });
+  }
+
+  public ap<U, E1>(next: Parser<U, E1>) {
+    return new Parser<Apply<T, U>, E | E1 | string>((s) => {
+      const left = this.parse(s);
+      if (left instanceof Err) return left;
+      const right = next.parse(left.next);
+      if (right instanceof Err) return right;
+      return typeof left.value != "function"
+        ? new Err("${left.value} is not a function")
+        : new Ok<Apply<T, U>>(left.value(right.value), right.next);
     });
   }
 }

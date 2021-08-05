@@ -15,8 +15,17 @@ const booleanParser = regexParser(/true|false/).map((r) => r === "true");
 const numberParser = regexParser(/\d+(\.\d+)?/).map(Number);
 const stringParser = regexParser(/"(\\"|[^"])*"/).map((r) => r.slice(1, -1));
 
-export const parser = fail
+const whitespace = regexParser(/\s*/);
+const leftBracket = regexParser(/\[/);
+const rightBracket = regexParser(/\]/);
+
+const arrayParser: Parser<any, string> = fail.or(() =>
+  leftBracket.apr(whitespace).apr(parser).apl(whitespace).apl(rightBracket)
+);
+
+export const parser: Parser<any, string> = fail
   .or(() => nullParser)
   .or(() => booleanParser)
   .or(() => numberParser)
-  .or(() => stringParser);
+  .or(() => stringParser)
+  .or(() => arrayParser);
