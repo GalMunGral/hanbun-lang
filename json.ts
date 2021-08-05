@@ -18,9 +18,14 @@ const stringParser = regexParser(/"(\\"|[^"])*"/).map((r) => r.slice(1, -1));
 const whitespace = regexParser(/\s*/);
 const leftBracket = regexParser(/\[/);
 const rightBracket = regexParser(/\]/);
+const comma = regexParser(/,/);
 
 const arrayParser: Parser<any, string> = fail.or(() =>
-  leftBracket.apr(whitespace).apr(parser).apl(whitespace).apl(rightBracket)
+  leftBracket
+    .apr(whitespace)
+    .apr(parser.sep(whitespace.apl(comma).apl(whitespace)))
+    .apl(whitespace)
+    .apl(rightBracket)
 );
 
 export const parser: Parser<any, string> = fail

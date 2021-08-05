@@ -1,7 +1,11 @@
 import { parser } from "./json";
 
-console.log(parser.parse(`[ null ]`));
-console.log(parser.parse(`[ true ]`));
-console.log(parser.parse(`[ false ]`));
-console.log(parser.parse(`[ 1234.567 ]`));
-console.log(parser.parse(`[ "Hello World" ]`));
+console.log(
+  JSON.stringify(
+    parser.parse(
+      `[ [ null, [true], false ], [[1234.567]], [[["Hello World"]]] ]`
+    ),
+    null,
+    2
+  )
+);

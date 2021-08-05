@@ -59,6 +59,31 @@ export class Parser<T, E = Error> {
         : new Ok<Apply<T, U>>(left.value(right.value), right.next);
     });
   }
+
+  public many() {
+    return new Parser<T[], E>((s) => {
+      const parsed: T[] = [];
+      let res: Ok<T> | Err<E>;
+      while ((res = this.parse(s)) instanceof Ok) {
+        parsed.push(res.value);
+        s = res.next;
+      }
+      return new Ok(parsed, s);
+    });
+  }
+
+  public sep<U, E1>(separator: Parser<U, E1>): Parser<T[], E | E1> {
+    return fail
+      .or(() =>
+        pure((head: T) => (tail: T[]) => [head, ...tail])
+          .ap(this)
+          .ap(separator.apr(this).many())
+      )
+      .or(() => pure([])) as Parser<T[], E | E1>;
+  }
 }
 
 export const fail = new Parser<null, null>(() => new Err(null));
+
+export const pure = <T>(value: T) =>
+  new Parser<T, any>((s) => new Ok(value, s));
