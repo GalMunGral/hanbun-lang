@@ -1,4 +1,4 @@
-import { Ok, Err, Parser } from "./lib";
+import { Ok, Err, Parser, fail } from "./lib";
 
 const regexParser = (r: RegExp) =>
   new Parser<string, string>((s) => {
@@ -15,4 +15,8 @@ const booleanParser = regexParser(/true|false/).map((r) => r === "true");
 const numberParser = regexParser(/\d+(\.\d+)?/).map(Number);
 const stringParser = regexParser(/"(\\"|[^"])*"/).map((r) => r.slice(1, -1));
 
-export const parser = nullParser;
+export const parser = fail
+  .or(() => nullParser)
+  .or(() => booleanParser)
+  .or(() => numberParser)
+  .or(() => stringParser);
