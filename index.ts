@@ -5,13 +5,12 @@ console.log(
     parser.parse(
       `{ 
         "a": null, 
-        "b": { 
-          "c": true, 
-          "d": { 
-            "e": 123.456 
-          } 
-        }, 
-        "f": "Hello world"
+        "b": [ 
+          true, 
+          { "e": 123.456 }
+        ], 
+        "c": {},
+        "f": [[["Hello world"]]]
       }`
     ),
     null,

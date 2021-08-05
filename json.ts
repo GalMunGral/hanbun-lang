@@ -1,6 +1,6 @@
 import { Ok, Err, Parser, fail, pure } from "./lib";
 
-const regexParser = (r: RegExp) =>
+const r = (r: RegExp) =>
   new Parser<string, string>((s) => {
     const match = s.match(r);
     if (match == null || (match.index && match.index > 0)) {
@@ -10,50 +10,98 @@ const regexParser = (r: RegExp) =>
     return new Ok(token, s.slice(token.length));
   });
 
-const nullParser = regexParser(/null/).map(() => null);
-const booleanParser = regexParser(/true|false/).map((r) => r === "true");
-const numberParser = regexParser(/\d+(\.\d+)?/).map(Number);
-const stringParser = regexParser(/"(\\"|[^"])*"/).map((r) => r.slice(1, -1));
+const ws = r(/\s*/);
+const number = r(/\d+(\.\d+)?/).map(Number);
+const string = r(/"(\\"|[^"])*"/).map((r) => r.slice(1, -1));
 
-const whitespace = regexParser(/\s*/);
-const leftBracket = regexParser(/\[/);
-const rightBracket = regexParser(/\]/);
-const leftBrace = regexParser(/\{/);
-const rightBrace = regexParser(/\}/);
-const comma = regexParser(/,/);
-const colon = regexParser(/:/);
+/**
+ * json
+ *  - element
+ */
+const json: Parser<any, string> = fail.or(() => element);
 
-const arrayParser: Parser<any, string> = fail.or(() =>
-  leftBracket
-    .apr(whitespace)
-    .apr(parser.sep(whitespace.apl(comma).apl(whitespace)))
-    .apl(whitespace)
-    .apl(rightBracket)
+/**
+ * value
+ *  - object
+ *  - array
+ *  - string
+ *  - number
+ *  - "true"
+ *  - "false"
+ *  - "null"
+ */
+const value: Parser<any, string> = fail
+  .or(() => object)
+  .or(() => array)
+  .or(() => string)
+  .or(() => number)
+  .or(() => r(/true/).map(() => true))
+  .or(() => r(/false/).map(() => false))
+  .or(() => r(/null/).map(() => null));
+
+/**
+ * object
+ *  - '{' ws '}'
+ *  - '{' members '}'
+ */
+const object: Parser<any, string> = fail
+  .or(() => pure({}).apl(r(/\{/)).apl(ws).apl(r(/\}/)))
+  .or(() => pure(Object.fromEntries).apl(r(/\{/)).ap(members).apl(r(/\}/)));
+
+/**
+ * members
+ *  - member ',' members
+ *  - member
+ */
+const members: Parser<any, string> = fail
+  .or(() =>
+    pure((head: any) => (tail: any[]) => [head, ...tail])
+      .ap(member)
+      .apl(r(/,/))
+      .ap(members)
+  )
+  .or(() => member.map((x: any) => [x]));
+
+/**
+ * member
+ *  - ws string ws ':' element
+ */
+const member: Parser<any, string> = fail.or(() =>
+  pure((key: string) => (value: any) => [key, value])
+    .apl(ws)
+    .ap(string)
+    .apl(ws)
+    .apl(r(/:/))
+    .ap(element)
 );
 
-const keyValuePair = fail.or(() =>
-  pure((key: string) => (value: any) => ({ key, value }))
-    .ap(stringParser)
-    .apl(whitespace.apl(colon).apl(whitespace))
-    .ap(parser)
-);
+/**
+ * array
+ *  - '[' ws ']'
+ *  - '[' elements ']'
+ */
+const array: Parser<any, string> = fail
+  .or(() => pure([]).apl(r(/\[/)).apl(ws).apl(r(/\]/)))
+  .or(() => r(/\[/).apr(elements).apl(r(/\]/)));
 
-const objectParser: Parser<any, string> = fail.or(() =>
-  pure((pairs: any[]) => {
-    // return pairs;
-    return Object.fromEntries(pairs.map(({ key, value }) => [key, value]));
-  })
-    .apl(leftBrace)
-    .apl(whitespace)
-    .ap(keyValuePair.sep(whitespace.apl(comma).apl(whitespace)))
-    .apl(whitespace)
-    .apl(rightBrace)
-);
+/**
+ * elements
+ *  - element ',' elements
+ *  - element
+ */
+const elements: Parser<any, string> = fail
+  .or(() =>
+    pure((head: any) => (tail: any[]) => [head, ...tail])
+      .ap(element)
+      .apl(r(/,/))
+      .ap(elements)
+  )
+  .or(() => element.map((x: any) => [x]));
 
-export const parser: Parser<any, string> = fail
-  .or(() => nullParser)
-  .or(() => booleanParser)
-  .or(() => numberParser)
-  .or(() => stringParser)
-  .or(() => arrayParser)
-  .or(() => objectParser);
+/**
+ * element
+ *  - ws value ws
+ */
+const element: Parser<any, string> = fail.or(() => ws.apr(value).apl(ws));
+
+export { json as parser };
