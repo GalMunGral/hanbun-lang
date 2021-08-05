@@ -10,7 +10,17 @@ type ParseFn<T, E> = (s: string) => Ok<T> | Err<E>;
 type Apply<A, B> = A extends (b: B) => infer C ? C : never;
 
 export class Parser<T, E = Error> {
-  constructor(public parse: ParseFn<T, E>) {}
+  public parse: ParseFn<T, E>;
+  private cache = new Map<string, Ok<T> | Err<E>>();
+
+  constructor(parse: ParseFn<T, E>) {
+    this.parse = (s: string) => {
+      if (!this.cache.has(s)) {
+        this.cache.set(s, parse(s));
+      }
+      return this.cache.get(s)!;
+    };
+  }
 
   public map<U>(fn: (a: T) => U) {
     return new Parser<U, E>((s) => {

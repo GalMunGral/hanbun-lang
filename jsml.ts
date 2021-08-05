@@ -18,7 +18,7 @@ const string = r(/"(\\"|[^"])*"/).map((r) => r.slice(1, -1));
  * json
  *  - element
  */
-const json: Parser<any, string> = fail.or(() => element);
+export const json: Parser<any, string> = fail.or(() => element);
 
 /**
  * value
@@ -69,7 +69,7 @@ const members: Parser<any, string> = fail
 const member: Parser<any, string> = fail.or(() =>
   pure((key: string) => (value: any) => [key, value])
     .apl(ws)
-    .ap(string)
+    .ap(string.or(() => r(/[\w-]+/)))
     .apl(ws)
     .apl(r(/:/))
     .ap(element)
@@ -101,7 +101,71 @@ const elements: Parser<any, string> = fail
 /**
  * element
  *  - ws value ws
+ *  - ws jsml ws
  */
-const element: Parser<any, string> = fail.or(() => ws.apr(value).apl(ws));
+const element: Parser<any, string> = fail
+  .or(() => ws.apr(value).apl(ws))
+  .or(() => ws.apr(jsml).apl(ws));
 
-export { json as parser };
+/////////////////////////////////////////////////////////
+
+/**
+ * attr
+ *  - ATTR = json
+ */
+const attr: Parser<any, string> = fail.or(() =>
+  pure((key: string) => (value: any) => [key, value])
+    .ap(r(/[\w-]+/))
+    .apl(r(/=/))
+    .ap(json.or(() => pure("")))
+);
+
+/**
+ * attrs
+ *  - attr ws attrs
+ *  - ws
+ */
+const attrs = fail.or(() => attr.sep(ws).map(Object.fromEntries));
+
+/**
+ * children
+ *  - json ws children
+ *  - ws
+ */
+const children = fail.or(() => json.sep(ws));
+
+/**
+ * jsml
+ *  - "<" ws TAG ws attrs ws ">" ws children ws "</" ws TAG ws ">""
+ *  - "<" ws TAG ws attrs ws "/>"
+ */
+const jsml: Parser<any, string> = fail
+  .or(() =>
+    pure((tag: string) => (attrs: object) => (children: any[]) => ({
+      tag,
+      attrs,
+      children,
+    }))
+      .ap(r(/<([\w-]+)/).map((match) => match[1]))
+      .apl(ws)
+      .ap(attrs)
+      .apl(ws)
+      .apl(r(/>/))
+      .apl(ws)
+      .ap(children)
+      .apl(ws)
+      .apl(r(/<\/[\w-]+>/))
+  )
+  .or(() =>
+    pure((tag: string) => (attrs: object) => ({
+      tag,
+      attrs,
+    }))
+      .ap(r(/<([\w-]+)/).map((match) => match[1]))
+      .apl(ws)
+      .ap(attrs)
+      .apl(ws)
+      .apl(r(/\/>/))
+  );
+
+export { element as parser };
