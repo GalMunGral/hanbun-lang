@@ -41,59 +41,59 @@ const value: Parser<any, string> = fail
 
 /**
  * object
- *  - '{' ws '}'
- *  - '{' members '}'
+ *  - '(' ws ')'
+ *  - '(' members ')'
  */
 const object: Parser<any, string> = fail
-  .or(() => pure({}).apl(r(/\{/)).apl(ws).apl(r(/\}/)))
-  .or(() => pure(Object.fromEntries).apl(r(/\{/)).ap(members).apl(r(/\}/)));
+  .or(() => pure({}).apl(r(/\(/)).apl(ws).apl(r(/\)/)))
+  .or(() => pure(Object.fromEntries).apl(r(/\(/)).ap(members).apl(r(/\)/)));
 
 /**
  * members
- *  - member ',' members
+ *  - member '.' members
  *  - member
  */
 const members: Parser<any, string> = fail
   .or(() =>
     pure((head: any) => (tail: any[]) => [head, ...tail])
       .ap(member)
-      .apl(r(/,/))
+      .apl(r(/\./))
       .ap(members)
   )
   .or(() => member.map((x: any) => [x]));
 
 /**
  * member
- *  - ws string ws ':' element
+ *  - ws string ws '->' element
  */
 const member: Parser<any, string> = fail.or(() =>
   pure((key: string) => (value: any) => [key, value])
     .apl(ws)
     .ap(string.or(() => r(/[\w-]+/)))
     .apl(ws)
-    .apl(r(/:/))
+    .apl(r(/->/))
     .ap(element)
 );
 
 /**
  * array
- *  - '[' ws ']'
- *  - '[' elements ']'
+ *  - '(' ws ')'
+ *  - '(' elements ')'
  */
 const array: Parser<any, string> = fail
-  .or(() => pure([]).apl(r(/\[/)).apl(ws).apl(r(/\]/)))
-  .or(() => r(/\[/).apr(elements).apl(r(/\]/)));
+  .or(() => pure([]).apl(r(/\(/)).apl(ws).apl(r(/\)/)))
+  .or(() => r(/\(/).apr(elements).apl(r(/\)/)));
 
 /**
  * elements
- *  - element ',' elements
+ *  - element '.' elements
  *  - element
  */
 const elements: Parser<any, string> = fail
   .or(() =>
     pure((head: any) => (tail: any[]) => [head, ...tail])
       .ap(element)
-      .apl(r(/,/))
+      .apl(r(/\./))
       .ap(elements)
   )
   .or(() => element.map((x: any) => [x]));
@@ -146,26 +146,25 @@ const jsml: Parser<any, string> = fail
       attrs,
       children,
     }))
-      .ap(r(/<([\w-]+)/).map((match) => match[1]))
+      .ap(r(/!([\w-]+)/).map((match) => match.slice(1)))
       .apl(ws)
       .ap(attrs)
       .apl(ws)
-      .apl(r(/>/))
       .apl(ws)
       .ap(children)
       .apl(ws)
-      .apl(r(/<\/[\w-]+>/))
+      .apl(r(/!/))
   )
   .or(() =>
     pure((tag: string) => (attrs: object) => ({
       tag,
       attrs,
     }))
-      .ap(r(/<([\w-]+)/).map((match) => match[1]))
+      .ap(r(/!([\w-]+)/).map((match) => match.slice(1)))
       .apl(ws)
       .ap(attrs)
       .apl(ws)
-      .apl(r(/\/>/))
+      .apl(r(/!/))
   );
 
 export { element as parser };
