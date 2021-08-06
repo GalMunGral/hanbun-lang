@@ -31,4 +31,4 @@ const script = `
   」
 `;
 
-console.log(JSON.stringify(parser.parse(script), null, 2));
+console.log(parser.parse(script), null, 2);

@@ -29,4 +29,4 @@ const script = `
     请 logger notify 之。
   」
 `;
-console.log(JSON.stringify(parser.parse(script), null, 2));
+console.log(parser.parse(script), null, 2);

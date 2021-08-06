@@ -23,9 +23,9 @@ const stringLiteral = fail.or(() => pure((literal) => ({
     .ap(r(/[^」]+/))
     .apl(close)
     .apl(pediod));
-const evalExpression = fail.or(() => pure((expr) => ({
+const evalExpression = fail.or(() => pure((expression) => ({
     type: "EVAL_EXPR",
-    expr,
+    expression,
 }))
     .apl(r(/有咒曰/))
     .apl(ws)
@@ -159,9 +159,9 @@ const clearLoadVar = fail.or(() => pure((path) => ({
     .apl(ws)
     .ap(variablePath)
     .apl(pediod));
-const loadVar = fail.or(() => pure((accesor) => ({
+const loadVar = fail.or(() => pure((path) => ({
     type: "LOAD_VAR",
-    accesor,
+    path,
 }))
     .apl(r(/有/))
     .apl(ws)
@@ -176,17 +176,17 @@ const loadConst = fail.or(() => pure((literal) => ({
     .ap(number)
     .apl(pediod));
 const storeVar = fail
-    .or(() => pure((accesor) => ({
-    type: "LOAD_VAR",
-    accesor,
+    .or(() => pure((path) => ({
+    type: "STORE_VAR",
+    path,
 }))
     .ap(variablePath)
     .apl(ws)
     .apl(r(/当如是/))
     .apl(pediod))
-    .or(() => pure((accesor) => ({
-    type: "LOAD_VAR",
-    accesor,
+    .or(() => pure((path) => ({
+    type: "STORE_VAR",
+    path,
 }))
     .apl(r(/或曰/))
     .apl(ws)

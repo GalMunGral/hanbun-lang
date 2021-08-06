@@ -31,9 +31,9 @@ const stringLiteral: Parser<any, string> = fail.or(() =>
 );
 
 const evalExpression: Parser<any, string> = fail.or(() =>
-  pure((expr: string) => ({
+  pure((expression: string) => ({
     type: "EVAL_EXPR",
-    expr,
+    expression,
   }))
     .apl(r(/有咒曰/))
     .apl(ws)
@@ -201,9 +201,9 @@ const clearLoadVar: Parser<any, string> = fail.or(() =>
 );
 
 const loadVar: Parser<any, string> = fail.or(() =>
-  pure((accesor: any) => ({
+  pure((path: any) => ({
     type: "LOAD_VAR",
-    accesor,
+    path,
   }))
     .apl(r(/有/))
     .apl(ws)
@@ -224,9 +224,9 @@ const loadConst: Parser<any, string> = fail.or(() =>
 
 const storeVar: Parser<any, string> = fail
   .or(() =>
-    pure((accesor: any) => ({
-      type: "LOAD_VAR",
-      accesor,
+    pure((path: any) => ({
+      type: "STORE_VAR",
+      path,
     }))
       .ap(variablePath)
       .apl(ws)
@@ -234,9 +234,9 @@ const storeVar: Parser<any, string> = fail
       .apl(pediod)
   )
   .or(() =>
-    pure((accesor: any) => ({
-      type: "LOAD_VAR",
-      accesor,
+    pure((path: any) => ({
+      type: "STORE_VAR",
+      path,
     }))
       .apl(r(/或曰/))
       .apl(ws)
