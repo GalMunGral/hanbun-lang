@@ -3,7 +3,9 @@ export class Ok<T> {
 }
 
 export class Err<E> {
-  constructor(public error: E) {}
+  constructor(public error: E) {
+    // console.log(error);
+  }
 }
 
 type ParseFn<T, E> = (s: string) => Ok<T> | Err<E>;

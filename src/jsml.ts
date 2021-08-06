@@ -1,4 +1,4 @@
-import { Ok, Err, Parser, fail, pure } from "./lib";
+import { Ok, Err, Parser, fail, pure } from "./lib.js";
 
 const r = (r: RegExp) =>
   new Parser<string, string>((s) => {
