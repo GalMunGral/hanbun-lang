@@ -19,7 +19,8 @@ class WenyanVM {
         this.get(path.slice(0, -1), context)[last(path)] = value;
     }
     execute(inst, context) {
-        console.group(inst.type, inst);
+        console.group(inst.type);
+        console.debug(inst);
         switch (inst.type) {
             case "SET_CURSOR": {
                 this.cursor = this.stack.pop();

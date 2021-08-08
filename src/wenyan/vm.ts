@@ -25,7 +25,8 @@ class WenyanVM {
   }
 
   private execute(inst: AST, context?: any) {
-    console.group(inst.type, inst);
+    console.group(inst.type);
+    console.debug(inst);
     switch (inst.type) {
       case "SET_CURSOR": {
         this.cursor = this.stack.pop();
