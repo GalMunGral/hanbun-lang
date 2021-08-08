@@ -163,7 +163,7 @@ const defineMethod = fail.or(() => pure((name) => (body) => ({
     .apl(ws)
     .ap(identifier)
     .apl(ws)
-    .apl(r(/对曰/))
+    .apl(r(/而答曰/))
     .apl(ws)
     .ap(instruction.sep(ws))
     .apl(ws)
