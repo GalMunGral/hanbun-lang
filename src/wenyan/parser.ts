@@ -129,37 +129,23 @@ const evalExpression = fail.or(() =>
     .apl(period)
 );
 
-const domNode = fail
-  .or(() =>
-    pure(
-      (tag: string) =>
-        (name: string): AST => ({
-          type: "DOM_NODE",
-          tag,
-          name,
-        })
-    )
-      .apl(r(/有/))
-      .apl(ws)
-      .ap(identifier)
-      .apl(ws)
-      .apl(r(/曰/))
-      .apl(ws)
-      .ap(identifier)
-      .apl(period)
+const domNode = fail.or(() =>
+  pure(
+    (tag: string): AST => ({
+      type: "DOM_NODE",
+      tag,
+    })
   )
-  .or(() =>
-    pure(
-      (tag: string): AST => ({
-        type: "DOM_NODE",
-        tag,
-      })
-    )
-      .apl(r(/有無名/))
-      .apl(ws)
-      .ap(identifier)
-      .apl(period)
-  );
+    .apl(r(/有/))
+    .apl(ws)
+    .apl(r(/「/))
+    .apl(ws)
+    .ap(identifier)
+    .apl(ws)
+    .apl(r(/」/))
+    .apl(ws)
+    .apl(period)
+);
 
 const setProperty = fail
 
@@ -235,6 +221,7 @@ const defineMethod = fail.or(() =>
     .ap(identifier)
     .apl(ws)
     .apl(r(/而答曰/))
+    .ap(period)
     .apl(ws)
     .ap(instruction.sep(ws))
     .apl(ws)

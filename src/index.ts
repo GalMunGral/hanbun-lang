@@ -1,7 +1,92 @@
 import { Err } from "./lib.js";
 import { interpret } from "./wenyan/vm.js";
 
-const script = `有咒曰Object.create(null)云云或曰logger其alert者window之alert也夫logger聞log而答曰請console君debug之有text云云聞notify而答曰或曰text吾當log之有文曰[文言lang-測試]云云有text請+之請window君alert之云云有document之body内有div曰container内有無名div其padding曰10px云云display曰flow-root云云background-color曰pink云云font-weight曰bold云云内有無名label其textContent曰重複次數云云有input曰count-input其display曰block云云有button曰mButton其textContent曰RANDOMIZE云云有無名label其textContent曰輸入云云有input曰original-input其display曰block云云夫container内有pre曰display其background-color曰lightgray云云padding曰20px云云white-space曰normal云云word-break曰break-all云云夫mButton其display曰block云云margin曰10px云云聞click而答曰有__INITIALIZED__不然曰吾當init云云然後曰吾當randomize之云云云云聞randomize而答曰有咒曰Math.random()云云有count請*之請Math君floor之real-count當如是有文曰當前重複次數為云云有real-count請+之document之title當如是有count有文曰x隨機數(0-1)\u0020=\u0020云云有real-count請+之請+之請logger君notify之有real-count也original-input之value當repeat之display之textContent當如是云云聞init而答曰有文曰應用初始化云云請window君confirm之然後曰有count-input之value也請parseInt之count當如是有咒曰isNaN(count)云云然後曰有0也count當如是云云有咒曰true云云__INITIALIZED__當如是夫count-input其randomize者吾之randomize也聞blur而答曰吾當randomize之有real-count請original-input之value君repeat之display之textContent當如是云云聞input而答曰有吾之value也請parseInt之count當如是有咒曰isNaN(count)云云然後曰有0也吾之value當如是count當如是云云云云夫original-input其background-color曰#ffaaaa云云其color曰white云云聞input而答曰有real-count也吾之value當repeat之display之textContent當如是云云云云云云夫document之body聞click而答曰有__INITIALIZED__不然曰有文曰請輸入您的姓名云云請window君prompt之或曰name有文曰您好云云有name請+之請window君alert之云云云云`;
+const script = `
+  咒「Object.create(null)」而得一物。是為「logger」。
+  其「alert」者。彼「window」之「alert」也。
+
+  夫「logger」。
+    聞「log」而答曰「
+      願「console」君「debug」之。吾有彼「text」。
+    」
+    聞「notify」而答曰「
+      是為「text」。吾欲「log」之。
+      有文曰「[文言lang-測試]」。有彼「text」。願「+」之。
+      願「window」君「alert」之。
+    」
+  
+  有彼「document」之「body」。
+    内有「div」。或曰「容器」。
+      内有「div」。
+        其「padding」「10px」。「display」「flow-root」。
+          「background-color」「pink」。「font-weight」「bold」。
+        内有「label」。其「textContent」者。「重複次數」也。
+        有「input」。或曰「count-input」。其「display」「block」。
+        有「button」。或曰「按鍵」。其「textContent」者。「RANDOMIZE」也。
+        有「label」。其「textContent」者。「輸入」也。
+        有「input」。或曰「文本框」。其「display」「block」。
+  
+  夫「容器」。
+    内有「pre」。或曰「顯示」。
+      其「background-color」「lightgray」。「padding」「20px」。
+        「white-space」「normal」。「word-break」「break-all」。
+  
+  夫「按鍵」。
+    其「display」「block」。「margin」「10px」。
+    聞「click」而答曰「
+      有彼「__INITIALIZED__」。
+      然。曰「吾欲「randomize」。」
+      不然。曰「吾欲「init」。」
+    」
+    聞「randomize」而答曰「
+      咒「Math.random()」而得一物。有彼「count」。請「*」之。
+        願「Math」君「floor」之。彼「實際倍數」當如是。
+      有文曰「當前重複次數為」。有彼「實際倍數」。請「+」之。
+        彼「document」之「title」當如是。
+      有彼「倍數」。有文曰「 x 隨機數(0-1) = 」。請「+」之。
+        有彼「實際倍數」。請「+」之。願「logger」「notify」之。
+      有彼「實際倍數」。願彼「文本框」之「value」「repeat」之。
+        彼「顯示」之「textContent」當如是。
+    」
+    聞「init」而答曰「
+      有文曰「應用初始化」。
+      願「window」君「confirm」之。 
+      然。曰「
+        有彼「count-input」之「value」。請「parseInt」之。彼「倍數」當如是。
+        咒「isNaN(倍數)」而得一物。 
+          然。曰「有數曰「0」。彼「count」當如是。」
+        有數曰「1」。彼「__INITIALIZED__」當如是。
+          
+        夫「count-input」。
+          其「randomize」者。吾之「randomize」也。
+          聞「blur」而答曰「
+            吾欲「randomize」。
+            有彼「實際倍數」。願彼「文本框」之「value」「repeat」之。
+              彼「顯示」之「textContent」當如是。
+          」
+          聞「input」而答曰「
+            有吾之「value」。請「parseInt」之。彼「count」當如是。
+            咒「isNaN(倍數)」而得一物。
+            然。曰「有數曰「0」。吾之「value」當如是。彼「count」當如是。」
+          」
+        夫「文本框」。
+          其「background-color」「#ffaaaa」。「color」「white」
+          聞「input」而答曰「
+            有彼「實際倍數」。願吾之「value」「repeat」之。
+            彼「顯示」之「textContent」當如是。
+          」
+      」
+    」
+  夫「document」之「body」。
+  聞「click」而答曰「
+    有彼「__INITIALIZED__」。
+    不然。曰「
+      有文曰「請輸入您的姓名」。願「window」「prompt」之。是為「name」。
+      有文曰「您好」。有彼「name」。願「+」之。
+      願「window」「alert」之。
+    」
+  」
+`;
 
 console.log(interpret(script));
 console.log(Err.last);
