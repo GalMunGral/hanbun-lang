@@ -8,9 +8,14 @@ export class Ok {
 }
 export class Err {
     error;
-    constructor(error) {
+    next;
+    static last;
+    constructor(error, next) {
         this.error = error;
-        // console.log(error);
+        this.next = next;
+        if (Err.last == null || next.length <= Err.last.next.length) {
+            Err.last = this;
+        }
     }
 }
 export class Parser {
@@ -23,6 +28,15 @@ export class Parser {
             }
             return this.cache.get(s);
         };
+    }
+    tap(fn) {
+        return new Parser((s) => {
+            const res = this.parse(s);
+            if (res instanceof Err)
+                return res;
+            fn(res.value);
+            return res;
+        });
     }
     map(fn) {
         return new Parser((s) => {
@@ -71,7 +85,7 @@ export class Parser {
             if (right instanceof Err)
                 return right;
             return typeof left.value != "function"
-                ? new Err("${left.value} is not a function")
+                ? new Err("${left.value} is not a function", left.next)
                 : new Ok(left.value(right.value), right.next);
         });
     }
@@ -94,5 +108,5 @@ export class Parser {
             .or(() => pure([]));
     }
 }
-export const fail = new Parser(() => new Err(null));
+export const fail = new Parser((s) => new Err(null, s));
 export const pure = (value) => new Parser((s) => new Ok(value, s));

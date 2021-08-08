@@ -2,7 +2,7 @@ import { Ok, Err, Parser, fail, pure } from "./lib.js";
 const r = (r) => new Parser((s) => {
     const match = s.match(r);
     if (match == null || (match.index && match.index > 0)) {
-        return new Err(`Expected ${r} at "${s}"`);
+        return new Err(`Expected ${r} at "${s}"`, s);
     }
     const token = match[0];
     return new Ok(token, s.slice(token.length));

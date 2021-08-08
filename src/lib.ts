@@ -3,8 +3,11 @@ export class Ok<T> {
 }
 
 export class Err<E> {
-  constructor(public error: E) {
-    // console.log(error);
+  static last: Err<unknown>;
+  constructor(public error: E, public next: string) {
+    if (Err.last == null || next.length <= Err.last.next.length) {
+      Err.last = this;
+    }
   }
 }
 
@@ -22,6 +25,15 @@ export class Parser<T, E = Error> {
       }
       return this.cache.get(s)!;
     };
+  }
+
+  public tap(fn: (res: T) => void) {
+    return new Parser<T, E>((s) => {
+      const res = this.parse(s);
+      if (res instanceof Err) return res;
+      fn(res.value);
+      return res;
+    });
   }
 
   public map<U>(fn: (a: T) => U) {
@@ -67,7 +79,7 @@ export class Parser<T, E = Error> {
       const right = next.parse(left.next);
       if (right instanceof Err) return right;
       return typeof left.value != "function"
-        ? new Err("${left.value} is not a function")
+        ? new Err("${left.value} is not a function", left.next)
         : new Ok<Apply<T, U>>(left.value(right.value), right.next);
     });
   }
@@ -95,7 +107,7 @@ export class Parser<T, E = Error> {
   }
 }
 
-export const fail = new Parser<null, null>(() => new Err(null));
+export const fail = new Parser<any, null>((s) => new Err(null, s));
 
 export const pure = <T>(value: T) =>
   new Parser<T, any>((s) => new Ok(value, s));

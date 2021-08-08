@@ -1,25 +1,22 @@
 import { Ok, Err, Parser, fail, pure } from "./lib.js";
-
-const r = (r: RegExp) =>
-  new Parser<string, string>((s) => {
+const r = (r) =>
+  new Parser((s) => {
     const match = s.match(r);
     if (match == null || (match.index && match.index > 0)) {
-      return new Err(`Expected ${r} at "${s}"`);
+      return new Err(`Expected ${r} at "${s}"`, s);
     }
     const token = match[0];
     return new Ok(token, s.slice(token.length));
   });
-
 const ws = r(/\s*/);
 const number = r(/\d+(\.\d+)?/).map(Number);
 const identifier = r(/[\w-]+/);
 const open = r(/「/);
 const close = r(/」/);
-const pediod = r(/。/);
-
-const stringLiteral: Parser<any, string> = fail.or(() =>
-  pure((literal: string) => ({
-    type: "STRING",
+const period = r(/。/);
+const stringLiteral = fail.or(() =>
+  pure((literal) => ({
+    type: "LOAD_STR",
     literal,
   }))
     .apl(r(/有文曰/))
@@ -27,11 +24,10 @@ const stringLiteral: Parser<any, string> = fail.or(() =>
     .apl(open)
     .ap(r(/[^」]+/))
     .apl(close)
-    .apl(pediod)
+    .apl(period)
 );
-
-const evalExpression: Parser<any, string> = fail.or(() =>
-  pure((expression: string) => ({
+const evalExpression = fail.or(() =>
+  pure((expression) => ({
     type: "EVAL_EXPR",
     expression,
   }))
@@ -42,18 +38,16 @@ const evalExpression: Parser<any, string> = fail.or(() =>
     .ap(r(/[^」]+/))
     .apl(ws)
     .apl(close)
-    .apl(pediod)
+    .apl(period)
 );
-
-const variablePath: Parser<any, string> = fail.or(() =>
-  pure((root: any) => (path: string[]) => [root, ...path])
+const variablePath = fail.or(() =>
+  pure((root) => (path) => [root, ...path])
     .ap(identifier.or(() => r(/吾/).map(() => "this")))
     .apl(ws)
     .ap(r(/之/).apr(ws).apr(identifier).sep(ws))
 );
-
-const domNode: Parser<any, string> = fail.or(() =>
-  pure((tag: string) => (name: string) => ({
+const domNode = fail.or(() =>
+  pure((tag) => (name) => ({
     type: "DOM_NODE",
     tag,
     name,
@@ -65,12 +59,11 @@ const domNode: Parser<any, string> = fail.or(() =>
     .apl(r(/曰/))
     .apl(ws)
     .ap(identifier)
-    .apl(pediod)
+    .apl(period)
 );
-
-const setProperty: Parser<any, string> = fail
+const setProperty = fail
   .or(() =>
-    pure((name: string) => (path: string) => ({
+    pure((name) => (path) => ({
       type: "SET_PROP",
       name,
       path,
@@ -79,13 +72,15 @@ const setProperty: Parser<any, string> = fail
       .apl(ws)
       .ap(identifier)
       .apl(ws)
+      .apl(r(/者?/))
+      .apl(ws)
       .ap(variablePath)
       .apl(ws)
-      .apl(r(/也/))
-      .apl(pediod)
+      .apl(r(/也?/))
+      .apl(period)
   )
   .or(() =>
-    pure((name: string) => (literal: string) => ({
+    pure((name) => (literal) => ({
       type: "SET_PROP",
       name,
       literal,
@@ -94,38 +89,37 @@ const setProperty: Parser<any, string> = fail
       .apl(ws)
       .ap(identifier)
       .apl(ws)
+      .apl(r(/者?/))
+      .apl(ws)
       .apl(open)
       .ap(r(/[^」]+/))
       .apl(close)
       .apl(ws)
-      .apl(r(/也/))
-      .apl(pediod)
+      .apl(r(/也?/))
+      .apl(period)
   );
-
-const setChildren: Parser<any, string> = fail.or(() =>
-  pure((children: any[]) => ({
+const setChildren = fail.or(() =>
+  pure((children) => ({
     type: "SET_CHILD",
     children,
   }))
     .apl(r(/其中/))
-    .apl(pediod)
     .ap(domNode.many())
 );
-
-const defineMethod: Parser<any, string> = fail.or(() =>
-  pure((name: string) => (body: any[]) => ({
-    type: "DEFN_METHOD",
+const defineMethod = fail.or(() =>
+  pure((name) => (body) => ({
+    type: "DEF_METHOD",
     name,
     body,
   }))
-    .apl(r(/问/))
+    .apl(r(/问之/))
     .apl(ws)
     .apl(open)
     .apl(ws)
     .ap(identifier)
     .apl(ws)
     .apl(close)
-    .apl(pediod)
+    .apl(period)
     .apl(ws)
     .apl(r(/对曰/))
     .apl(ws)
@@ -135,10 +129,9 @@ const defineMethod: Parser<any, string> = fail.or(() =>
     .apl(ws)
     .apl(close)
 );
-
-const applyMethod: Parser<any, string> = fail
+const applyMethod = fail
   .or(() =>
-    pure((receiver: any) => (method: string) => ({
+    pure((receiver) => (method) => ({
       type: "APPLY_METHOD",
       receiver,
       method,
@@ -147,104 +140,124 @@ const applyMethod: Parser<any, string> = fail
       .apl(ws)
       .ap(variablePath)
       .apl(ws)
+      .apl(r(/君?(一并)?/))
+      .apl(ws)
       .ap(identifier)
       .apl(ws)
       .apl(r(/之/))
-      .apl(pediod)
+      .apl(period)
   )
   .or(() =>
-    pure((method: string) => ({
+    pure((receiver) => (method) => ({
+      type: "APPLY_METHOD",
+      receiver,
+      method,
+    }))
+      .ap(variablePath)
+      .apl(ws)
+      .apl(r(/当(一并)?/))
+      .apl(ws)
+      .ap(identifier)
+      .apl(ws)
+      .apl(r(/之/))
+      .apl(period)
+  )
+  .or(() =>
+    pure((method) => ({
       type: "APPLY_METHOD",
       receiver: "this",
       method,
     }))
-      .apl(r(/当/))
+      .apl(r(/吾当(一并)?/))
       .apl(ws)
       .ap(identifier)
       .apl(ws)
       .apl(r(/之/))
-      .apl(pediod)
+      .apl(period)
   );
-
-const applyFunction: Parser<any, string> = fail.or(() =>
-  pure((func: any) => ({
+const applyFunction = fail.or(() =>
+  pure((func) => ({
     type: "APPLY_FUNC",
     func,
   }))
+    .apl(r(/(一并)?/))
+    .apl(ws)
     .ap(variablePath)
     .apl(r(/之/))
-    .apl(pediod)
+    .apl(period)
 );
-
-const applyOperator: Parser<any, string> = fail.or(() =>
-  pure((literal: any) => ({
+const applyOperator = fail.or(() =>
+  pure((literal) => ({
     type: "APPLY_OP",
     literal,
   }))
+    .apl(r(/(一并)?/))
+    .apl(ws)
     .apl(open)
     .ap(r(/[^」]+/))
     .apl(close)
     .apl(ws)
     .apl(r(/之/))
-    .apl(pediod)
+    .apl(period)
 );
-
-const clearLoadVar: Parser<any, string> = fail.or(() =>
-  pure((path: string) => ({
-    type: "CLR_LOAD_VAR",
-    path,
-  }))
-    .apl(r(/夫/))
-    .apl(ws)
-    .ap(variablePath)
-    .apl(pediod)
-);
-
-const loadVar: Parser<any, string> = fail.or(() =>
-  pure((path: any) => ({
+const loadVar = fail.or(() =>
+  pure((path) => ({
     type: "LOAD_VAR",
     path,
   }))
     .apl(r(/有/))
     .apl(ws)
     .ap(variablePath)
-    .apl(pediod)
+    .apl(period)
 );
-
-const loadConst: Parser<any, string> = fail.or(() =>
-  pure((literal: any) => ({
+const resetAndloadVar = fail.or(() =>
+  pure((path) => ({
+    type: "RST_LOAD_VAR",
+    path,
+  }))
+    .apl(r(/夫/))
+    .apl(ws)
+    .ap(variablePath)
+    .apl(period)
+);
+const loadConst = fail.or(() =>
+  pure((literal) => ({
     type: "LOAD_CONST",
     literal,
   }))
     .apl(r(/有/))
     .apl(ws)
     .ap(number)
-    .apl(pediod)
+    .apl(period)
 );
-
-const storeVar: Parser<any, string> = fail
+const storeVar = fail
   .or(() =>
-    pure((path: any) => ({
+    pure((path) => ({
       type: "STORE_VAR",
       path,
     }))
       .ap(variablePath)
       .apl(ws)
       .apl(r(/当如是/))
-      .apl(pediod)
+      .apl(period)
   )
   .or(() =>
-    pure((path: any) => ({
+    pure((path) => ({
       type: "STORE_VAR",
       path,
     }))
       .apl(r(/或曰/))
       .apl(ws)
       .ap(variablePath)
-      .apl(pediod)
+      .apl(period)
   );
-
-const instruction: Parser<any, string> = fail
+const pop = pure({
+  type: "POP",
+}).apl(r(/另/));
+const reset = pure({
+  type: "RST",
+}).apl(r(/盖|夫/));
+const instruction = fail
   .or(() => stringLiteral)
   .or(() => evalExpression)
   .or(() => domNode)
@@ -257,8 +270,8 @@ const instruction: Parser<any, string> = fail
   .or(() => storeVar)
   .or(() => loadConst)
   .or(() => loadVar)
-  .or(() => clearLoadVar);
-
+  .or(() => resetAndloadVar)
+  .or(() => reset)
+  .or(() => pop);
 const program = ws.apr(instruction.sep(ws)).apl(ws);
-
 export { program as parser };
