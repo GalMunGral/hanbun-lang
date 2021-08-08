@@ -20,6 +20,7 @@ const variablePath = fail.or(() => pure((root) => (path) => [root, ...path])
 const setCursor = pure({
     type: "SET_CURSOR",
 })
+    .tap(console.log)
     .apl(r(/内/))
     .apl(period);
 const loadVar = fail.or(() => pure((path) => ({
@@ -29,6 +30,8 @@ const loadVar = fail.or(() => pure((path) => ({
     .apl(r(/有/))
     .apl(ws)
     .ap(variablePath)
+    .apl(ws)
+    .apl(r(/也?/))
     .apl(period));
 const resetAndloadVar = fail.or(() => pure((path) => ({
     type: "RST_LOAD_VAR",
@@ -46,6 +49,8 @@ const loadConst = fail
     .apl(r(/有/))
     .apl(ws)
     .ap(number)
+    .apl(ws)
+    .apl(r(/也?/))
     .apl(period))
     .or(() => pure((value) => ({
     type: "LOAD_CONST",
@@ -53,9 +58,9 @@ const loadConst = fail
 }))
     .apl(r(/有文曰/))
     .apl(ws)
-    .apl(open)
-    .ap(r(/[^」]+/))
-    .apl(close)
+    .ap(r(/[^云]+/))
+    .apl(ws)
+    .apl(r(/云云/))
     .apl(period));
 const storeVar = fail
     .or(() => pure((path) => ({
@@ -80,11 +85,9 @@ const evalExpression = fail.or(() => pure((value) => ({
 }))
     .apl(r(/有咒曰/))
     .apl(ws)
-    .apl(open)
+    .ap(r(/[^云]+/))
     .apl(ws)
-    .ap(r(/[^」]+/))
-    .apl(ws)
-    .apl(close)
+    .apl(r(/云云/))
     .apl(period));
 const domNode = fail
     .or(() => pure((tag) => (name) => ({
@@ -131,12 +134,10 @@ const setProperty = fail
     .apl(ws)
     .ap(identifier)
     .apl(ws)
-    .apl(r(/也?/))
+    .apl(r(/曰/))
     .apl(ws)
-    .apl(open)
-    .ap(r(/[^」]+/))
-    .apl(close)
-    .apl(period))
+    .ap(r(/[^云]+/))
+    .apl(r(/云云/)))
     .or(() => pure((name) => (path) => ({
     type: "SET_PROP",
     name,
@@ -152,23 +153,6 @@ const setProperty = fail
     .ap(variablePath)
     .apl(ws)
     .apl(r(/也?/))
-    .apl(period))
-    .or(() => pure((name) => (literal) => ({
-    type: "SET_PROP",
-    name,
-    literal,
-}))
-    .apl(r(/其/))
-    .apl(ws)
-    .ap(identifier)
-    .apl(ws)
-    .apl(r(/者?/))
-    .apl(ws)
-    .apl(open)
-    .ap(r(/[^」]+/))
-    .apl(close)
-    .apl(ws)
-    .apl(r(/也?/))
     .apl(period));
 const defineMethod = fail.or(() => pure((name) => (body) => ({
     type: "DEF_METHOD",
@@ -177,20 +161,13 @@ const defineMethod = fail.or(() => pure((name) => (body) => ({
 }))
     .apl(r(/闻/))
     .apl(ws)
-    .apl(open)
-    .apl(ws)
     .ap(identifier)
-    .apl(ws)
-    .apl(close)
-    .apl(period)
     .apl(ws)
     .apl(r(/对曰/))
     .apl(ws)
-    .apl(open)
-    .apl(ws)
     .ap(instruction.sep(ws))
     .apl(ws)
-    .apl(close)
+    .apl(r(/云云/))
     .apl(period));
 const applyMethod = fail
     .or(() => pure((receiver) => (method) => ({
@@ -225,20 +202,19 @@ const applyFunction = fail.or(() => pure((func) => ({
     type: "APPLY_FUNC",
     func,
 }))
-    .apl(r(/(一并)?/))
+    .apl(r(/请(一并)?/))
     .apl(ws)
-    .ap(variablePath)
+    // .ap(variablePath)
+    .ap(identifier)
     .apl(r(/之/))
     .apl(period));
 const applyOperator = fail.or(() => pure((op) => ({
     type: "APPLY_OP",
     op,
 }))
-    .apl(r(/(一并)?/))
+    .apl(r(/请(一并)?/))
     .apl(ws)
-    .apl(open)
-    .ap(r(/[^」]+/))
-    .apl(close)
+    .ap(r(/[+\-*/]/))
     .apl(ws)
     .apl(r(/之/))
     .apl(period));
@@ -248,11 +224,9 @@ const block = fail.or(() => pure((body) => ({
 }))
     .apl(r(/曰/))
     .apl(ws)
-    .apl(open)
-    .apl(ws)
     .ap(instruction.sep(ws))
     .apl(ws)
-    .apl(close)
+    .apl(r(/云云/))
     .apl(period));
 const conditional = fail
     .or(() => pure((body) => ({

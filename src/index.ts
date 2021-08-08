@@ -1,75 +1,7 @@
+import { Err } from "./lib.js";
 import { interpret } from "./wenyan/vm.js";
 
-const script = `
-  有咒曰「Object.create(null)」，或曰 logger。
-  其 alert 者，window 之 alert 也。
-
-  夫 logger，
-  闻「log」，对曰「请 console 君 debug 之。有 text。」
-  闻「notify」，对曰「
-    或曰 text。吾当 log 之。
-    有文曰「[文言lang-测试] 」，有 text「+」之，请 window 君 alert 之。
-  」
-
-  有 document 之 body。
-    内有 div 曰 container。
-      内有无名 div。其 padding 也「10px」，其 display「flow-root」。
-      其 background-color「pink」，font-weight「bold」。
-        内有无名 label，其 textContent 者「重复次数」也。
-        有 input 曰 count-input，其 display 也「block」。
-        有无名 label，其 textContent 者「输入」。
-        有 input 曰 original-input，display「block」。
-        有 button 曰 mButton，其 textContent 者「CLICK ME」。
-  
-  夫 container，内有 pre 曰 display。
-  其 background-color「lightgray」，其 padding 也「20px」。
-  其 white-space「normal」，word-break「break-all」。
-
-  夫 mButton，其 display 也「block」，其 margin 也「10px」。
-  闻「click」，对曰「
-    有 __INITIALIZED__，不然，曰「吾当 init。」
-    然后曰「吾当 randomize 之。」
-  」
-
-  闻「randomize」，对曰「
-    有咒曰「Math.random()」，有 count「*」之。请 Math 君 floor 之，
-      real-count 应如是。
-    有文曰「当前倍数为 」，有 real-count「+」之，
-      document 之 title 应如是。
-    有 count，有文曰「x 随机数（0-1）= 」，有 real-count，
-      「+」之「+」之，请 logger 君 notify 之。
-    有 real-count，original-input 之 value 当 repeat 之，
-      display 之 textContent 应如是。
-  」
-  
-  闻「init」，对曰「
-    有文曰「确认：初始化应用」，请 window 君 confirm 之，然后曰「
-      有 count-input 之 value，parseInt 之，count 应如是。
-      有咒曰「isNaN(count)」，然后曰「有0，count 应如是。」
-      有咒曰「true」，__INITIALIZED__ 应如是。
-
-      夫 count-input。
-      其 randomize 者，吾之 randomize 也。
-      闻「blur」，对曰「
-        吾当 randomize 之。
-        有 real-count，请 original-input 之 value repeat 之。
-        display 之 textContent 应如是。
-      」
-      闻「input」，对曰「
-        有吾之 value，parseInt 之，count 应如是。
-        有咒曰「isNaN(count)」，然后曰「
-          有0，吾之 value 应如是，count 应如是。
-        」
-      」
-      
-      夫 original-input，
-      其 background-color 也「#ffaaaa」，其 color 也「white」。
-      闻「input」，对曰「
-        有 real-count，吾之 value 当 repeat 之。
-        display 之 textContent 应如是。
-      」
-    」
-  」
-`;
+const script = `有咒曰Object.create(null)云云或曰logger其alert者window之alert也夫logger闻log对曰请console君debug之有text云云闻notify对曰或曰text吾当log之有文曰[文言lang-测试]云云有text请+之请window君alert之云云有document之body内有div曰container内有无名div其padding曰10px云云display曰flow-root云云background-color曰pink云云font-weight曰bold云云内有无名label其textContent曰重复次数云云有input曰count-input其display曰block云云有button曰mButton其textContent曰RANDOMIZE云云有无名label其textContent曰输入云云有input曰original-input其display曰block云云夫container内有pre曰display其background-color曰lightgray云云padding曰20px云云white-space曰normal云云word-break曰break-all云云夫mButton其display曰block云云margin曰10px云云闻click对曰有__INITIALIZED__不然曰吾当init云云然后曰吾当randomize之云云云云闻randomize对曰有咒曰Math.random()云云有count请*之请Math君floor之real-count当如是有文曰当前倍数为云云有real-count请+之document之title当如是有count有文曰x随机数(0-1)\u0020=\u0020云云有real-count请+之请+之请logger君notify之有real-count也original-input之value当repeat之display之textContent当如是云云闻init对曰有文曰确认初始化应用云云请window君confirm之然后曰有count-input之value也请parseInt之count当如是有咒曰isNaN(count)云云然后曰有0也count当如是云云有咒曰true云云__INITIALIZED__当如是夫count-input其randomize者吾之randomize也闻blur对曰吾当randomize之有real-count请original-input之value君repeat之display之textContent当如是云云闻input对曰有吾之value也请parseInt之count当如是有咒曰isNaN(count)云云然后曰有0也吾之value当如是count当如是云云云云夫original-input其background-color曰#ffaaaa云云其color曰white云云闻input对曰有real-count也吾之value当repeat之display之textContent当如是云云云云云云夫document之body闻click对曰有文曰请输入你的名字云云请window君prompt之或曰name有文曰你好：云云有name请+之请window君alert之云云`;
 
 console.log(interpret(script));
+console.log(Err.last);
