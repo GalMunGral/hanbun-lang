@@ -26,9 +26,9 @@ const script = `
   其 white-space「normal」，word-break「break-all」。
 
   夫 mButton，其 display 也「block」，其 margin 也「10px」。
-  闻「click」，对曰「 
-    有 __INITIALIZED__，不然，曰「 吾当 init。」
-    然后曰「 吾当 randomize 之。」
+  闻「click」，对曰「
+    有 __INITIALIZED__，不然，曰「吾当 init。」
+    然后曰「吾当 randomize 之。」
   」
 
   闻「randomize」，对曰「
@@ -36,7 +36,7 @@ const script = `
       real-count 应如是。
     有文曰「当前倍数为 」，有 real-count「+」之，
       document 之 title 应如是。
-    有 count，有文曰「 x 随机数（0-1）= 」，有 real-count，
+    有 count，有文曰「x 随机数（0-1）= 」，有 real-count，
       「+」之「+」之，请 logger 君 notify 之。
     有 real-count，original-input 之 value 当 repeat 之，
       display 之 textContent 应如是。
@@ -45,7 +45,7 @@ const script = `
   闻「init」，对曰「
     有文曰「确认：初始化应用」，请 window 君 confirm 之，然后曰「
       有 count-input 之 value，parseInt 之，count 应如是。
-      有咒曰「isNaN(count)」，然后曰「 有0，count 应如是。」
+      有咒曰「isNaN(count)」，然后曰「有0，count 应如是。」
       有咒曰「true」，__INITIALIZED__ 应如是。
 
       夫 count-input。
@@ -55,7 +55,7 @@ const script = `
         有 real-count，请 original-input 之 value repeat 之。
         display 之 textContent 应如是。
       」
-      闻「input」，对曰「 
+      闻「input」，对曰「
         有吾之 value，parseInt 之，count 应如是。
         有咒曰「isNaN(count)」，然后曰「
           有0，吾之 value 应如是，count 应如是。
