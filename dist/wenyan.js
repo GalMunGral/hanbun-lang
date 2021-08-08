@@ -136,11 +136,11 @@ const applyMethod = fail
       receiver,
       method,
     }))
-      .apl(r(/请/))
+      .apl(r(/請/))
       .apl(ws)
       .ap(variablePath)
       .apl(ws)
-      .apl(r(/君?(一并)?/))
+      .apl(r(/君?(一併)?/))
       .apl(ws)
       .ap(identifier)
       .apl(ws)
@@ -155,7 +155,7 @@ const applyMethod = fail
     }))
       .ap(variablePath)
       .apl(ws)
-      .apl(r(/当(一并)?/))
+      .apl(r(/當(一併)?/))
       .apl(ws)
       .ap(identifier)
       .apl(ws)
@@ -168,7 +168,7 @@ const applyMethod = fail
       receiver: "this",
       method,
     }))
-      .apl(r(/吾当(一并)?/))
+      .apl(r(/吾當(一併)?/))
       .apl(ws)
       .ap(identifier)
       .apl(ws)
@@ -180,7 +180,7 @@ const applyFunction = fail.or(() =>
     type: "APPLY_FUNC",
     func,
   }))
-    .apl(r(/(一并)?/))
+    .apl(r(/(一併)?/))
     .apl(ws)
     .ap(variablePath)
     .apl(r(/之/))
@@ -191,7 +191,7 @@ const applyOperator = fail.or(() =>
     type: "APPLY_OP",
     literal,
   }))
-    .apl(r(/(一并)?/))
+    .apl(r(/(一併)?/))
     .apl(ws)
     .apl(open)
     .ap(r(/[^」]+/))
@@ -238,7 +238,7 @@ const storeVar = fail
     }))
       .ap(variablePath)
       .apl(ws)
-      .apl(r(/当如是/))
+      .apl(r(/當如是/))
       .apl(period)
   )
   .or(() =>

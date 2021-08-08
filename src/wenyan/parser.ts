@@ -14,8 +14,6 @@ const r = (r: RegExp) =>
 const ws = r(/\s*/);
 const number = r(/\d+(\.\d+)?/).map(Number);
 const identifier = r(/[\w-]+/);
-const open = r(/「/);
-const close = r(/」/);
 const period = r(/[，。？]?/);
 
 const variablePath = fail.or(() =>
@@ -100,7 +98,7 @@ const storeVar = fail
     )
       .ap(variablePath)
       .apl(ws)
-      .apl(r(/(当|应)如是/))
+      .apl(r(/(當|应)如是/))
       .apl(period)
   )
   .or(() =>
@@ -157,7 +155,7 @@ const domNode = fail
         tag,
       })
     )
-      .apl(r(/有无名/))
+      .apl(r(/有無名/))
       .apl(ws)
       .ap(identifier)
       .apl(period)
@@ -232,7 +230,7 @@ const defineMethod = fail.or(() =>
         body,
       })
   )
-    .apl(r(/闻/))
+    .apl(r(/聞/))
     .apl(ws)
     .ap(identifier)
     .apl(ws)
@@ -254,11 +252,11 @@ const applyMethod = fail
           method,
         })
     )
-      .apl(r(/请/))
+      .apl(r(/請/))
       .apl(ws)
       .ap(variablePath)
       .apl(ws)
-      .apl(r(/君?(一并)?/))
+      .apl(r(/君?(一併)?/))
       .apl(ws)
       .ap(identifier)
       .apl(ws)
@@ -276,7 +274,7 @@ const applyMethod = fail
     )
       .ap(variablePath)
       .apl(ws)
-      .apl(r(/君?当(一并)?/))
+      .apl(r(/君?當(一併)?/))
       .apl(ws)
       .ap(identifier)
       .apl(ws)
@@ -291,7 +289,7 @@ const applyFunction = fail.or(() =>
       func,
     })
   )
-    .apl(r(/请(一并)?/))
+    .apl(r(/請(一併)?/))
     .apl(ws)
     // .ap(variablePath)
     .ap(identifier)
@@ -306,7 +304,7 @@ const applyOperator = fail.or(() =>
       op,
     })
   )
-    .apl(r(/请(一并)?/))
+    .apl(r(/請(一併)?/))
     .apl(ws)
     .ap(r(/[+\-*/]/))
     .apl(ws)
@@ -337,7 +335,7 @@ const conditional = fail
         body,
       })
     )
-      .apl(r(/然后/))
+      .apl(r(/然後/))
       .ap(instruction)
       .apl(period)
   )
@@ -349,7 +347,7 @@ const conditional = fail
       })
     )
       .apl(r(/不然/))
-      .apl(r(/则/).or(() => period))
+      .apl(r(/則/).or(() => period))
       .ap(instruction)
       .apl(period)
   );
