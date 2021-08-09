@@ -76,16 +76,14 @@ class WenyanVM {
                 this.stack.push(result);
                 break;
             }
-            case "IF_TRUE": {
+            case "BRANCH": {
                 const result = last(this.stack);
-                if (result)
-                    this.execute(inst.body, context);
-                break;
-            }
-            case "IF_FALSE": {
-                const result = last(this.stack);
-                if (!result)
-                    this.execute(inst.body, context);
+                if (result) {
+                    this.run(inst.consequent, context);
+                }
+                else {
+                    this.run(inst.alternate, context);
+                }
                 break;
             }
             case "DEF_METHOD": {
@@ -135,7 +133,6 @@ class WenyanVM {
             default:
                 console.log(inst);
         }
-        // console.log([...this.stack]);
         console.groupEnd();
     }
     run(program, context) {

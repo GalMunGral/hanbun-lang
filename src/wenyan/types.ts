@@ -62,14 +62,11 @@ export type AST =
       op: string;
     }
   | {
-      type: "IF_TRUE";
-      body: AST;
-    }
-  | {
-      type: "IF_FALSE";
-      body: AST;
-    }
-  | {
       type: "BLOCK";
       body: AST[];
+    }
+  | {
+      type: "BRANCH";
+      consequent: AST[];
+      alternate: AST[];
     };

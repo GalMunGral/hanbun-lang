@@ -12,23 +12,76 @@ const r = (r: RegExp) =>
   });
 
 const ws = r(/\s*/);
-const number = r(/\d+(\.\d+)?/).map(Number);
-const identifier = r(/[\w-]+/);
-const period = r(/[，。？]?/);
-
+const period = r(/。/);
+const quoted = r(/「.+?」/).map((r) => r.slice(1, -1));
+const self = r(/吾/).map(() => "this");
+const attrPath = r(/之/).apr(quoted).sep(ws);
 const variablePath = fail.or(() =>
   pure((root: any) => (path: string[]) => [root, ...path])
-    .ap(identifier.or(() => r(/吾/).map(() => "this")))
-    .apl(ws)
-    .ap(r(/之/).apr(ws).apr(identifier).sep(ws))
+    .ap(quoted.or(() => self))
+    .ap(attrPath)
 );
+
+const block = fail.or(() =>
+  pure(
+    (body: any[]): AST => ({
+      type: "BLOCK",
+      body,
+    })
+  )
+    .apl(r(/曰「/))
+    .apl(ws)
+    .ap(instruction.sep(ws))
+    .apl(ws)
+    .apl(r(/」/))
+);
+
+const conditional = fail
+  .or(() =>
+    pure(
+      (consequent: AST[]) =>
+        (alternate: AST[]): AST => ({
+          type: "BRANCH",
+          consequent,
+          alternate,
+        })
+    )
+      .apl(r(/然。/))
+      .apl(ws)
+      .ap(block.map((b) => b.body))
+      .apl(ws)
+      .apl(r(/不然。/))
+      .apl(ws)
+      .ap(block.map((b) => b.body))
+  )
+  .or(() =>
+    pure(
+      (alternate: AST[]): AST => ({
+        type: "BRANCH",
+        consequent: [],
+        alternate,
+      })
+    )
+      .apl(r(/不然。/))
+      .apl(ws)
+      .ap(block.map((b) => b.body))
+  )
+  .or(() =>
+    pure(
+      (consequent: AST[]): AST => ({
+        type: "BRANCH",
+        consequent,
+        alternate: [],
+      })
+    )
+      .apl(r(/然。/))
+      .apl(ws)
+      .ap(block.map((b) => b.body))
+  );
 
 const setCursor = pure<AST>({
   type: "SET_CURSOR",
-})
-  .tap(console.log)
-  .apl(r(/内/))
-  .apl(period);
+}).apl(r(/内/));
 
 const loadVar = fail.or(() =>
   pure(
@@ -37,11 +90,8 @@ const loadVar = fail.or(() =>
       path,
     })
   )
-    .apl(r(/有/))
-    .apl(ws)
+    .apl(r(/吾?有彼?/))
     .ap(variablePath)
-    .apl(ws)
-    .apl(r(/也?/))
     .apl(period)
 );
 
@@ -53,7 +103,6 @@ const resetAndloadVar = fail.or(() =>
     })
   )
     .apl(r(/夫/))
-    .apl(ws)
     .ap(variablePath)
     .apl(period)
 );
@@ -66,11 +115,8 @@ const loadConst = fail
         value,
       })
     )
-      .apl(r(/有/))
-      .apl(ws)
-      .ap(number)
-      .apl(ws)
-      .apl(r(/也?/))
+      .apl(r(/有數曰/))
+      .ap(quoted.map(Number))
       .apl(period)
   )
   .or(() =>
@@ -81,10 +127,7 @@ const loadConst = fail
       })
     )
       .apl(r(/有文曰/))
-      .apl(ws)
-      .ap(r(/[^云]+/))
-      .apl(ws)
-      .apl(r(/云云/))
+      .ap(quoted)
       .apl(period)
   );
 
@@ -96,9 +139,9 @@ const storeVar = fail
         path,
       })
     )
+      .apl(r(/彼?/))
       .ap(variablePath)
-      .apl(ws)
-      .apl(r(/(當|应)如是/))
+      .apl(r(/當如是/))
       .apl(period)
   )
   .or(() =>
@@ -108,8 +151,7 @@ const storeVar = fail
         path,
       })
     )
-      .apl(r(/或曰/))
-      .apl(ws)
+      .apl(r(/是為|或曰/))
       .ap(variablePath)
       .apl(period)
   );
@@ -121,11 +163,9 @@ const evalExpression = fail.or(() =>
       value,
     })
   )
-    .apl(r(/有咒曰/))
-    .apl(ws)
-    .ap(r(/[^云]+/))
-    .apl(ws)
-    .apl(r(/云云/))
+    .apl(r(/唸/))
+    .ap(quoted)
+    .apl(r(/而得一物/))
     .apl(period)
 );
 
@@ -137,18 +177,11 @@ const domNode = fail.or(() =>
     })
   )
     .apl(r(/有/))
-    .apl(ws)
-    .apl(r(/「/))
-    .apl(ws)
-    .ap(identifier)
-    .apl(ws)
-    .apl(r(/」/))
-    .apl(ws)
+    .ap(quoted)
     .apl(period)
 );
 
 const setProperty = fail
-
   .or(() =>
     pure(
       (name: string) =>
@@ -159,12 +192,29 @@ const setProperty = fail
         })
     )
       .apl(r(/其/))
+      .ap(quoted)
+      .apl(r(/者/))
+      .apl(period)
       .apl(ws)
-      .ap(identifier)
-      .apl(ws)
-      .apl(r(/也?/))
-      .apl(ws)
+      .apl(r(/彼?/))
       .ap(variablePath)
+      .apl(r(/也/))
+      .apl(period)
+  )
+  .or(() =>
+    pure(
+      (name: string) =>
+        (literal: string): AST => ({
+          type: "SET_PROP",
+          name,
+          literal,
+        })
+    )
+      .apl(r(/其/))
+      .ap(quoted)
+      .apl(r(/曰/))
+      .ap(quoted)
+      .apl(r(/也/))
       .apl(period)
   )
   .or(() =>
@@ -177,33 +227,8 @@ const setProperty = fail
         })
     )
       .apl(r(/其?/))
-      .apl(ws)
-      .ap(identifier)
-      .apl(ws)
-      .apl(r(/曰/))
-      .apl(ws)
-      .ap(r(/[^云]+/))
-      .apl(r(/云云/))
-  )
-  .or(() =>
-    pure(
-      (name: string) =>
-        (path: string[]): AST => ({
-          type: "SET_PROP",
-          name,
-          path,
-        })
-    )
-      .apl(r(/其/))
-      .apl(ws)
-      .ap(identifier)
-      .apl(ws)
-      .apl(r(/者?/))
-      .apl(period)
-      .apl(ws)
-      .ap(variablePath)
-      .apl(ws)
-      .apl(r(/也?/))
+      .ap(quoted)
+      .ap(quoted)
       .apl(period)
   );
 
@@ -217,16 +242,9 @@ const defineMethod = fail.or(() =>
       })
   )
     .apl(r(/聞/))
-    .apl(ws)
-    .ap(identifier)
-    .apl(ws)
-    .apl(r(/而答曰/))
-    .ap(period)
-    .apl(ws)
-    .ap(instruction.sep(ws))
-    .apl(ws)
-    .apl(r(/云云/))
-    .apl(period)
+    .ap(quoted)
+    .apl(r(/而答/))
+    .ap(block.map((b) => b.body))
 );
 
 const applyMethod = fail
@@ -239,33 +257,23 @@ const applyMethod = fail
           method,
         })
     )
-      .apl(r(/請/))
-      .apl(ws)
+      .apl(r(/願/))
       .ap(variablePath)
-      .apl(ws)
-      .apl(r(/君?(一併)?/))
-      .apl(ws)
-      .ap(identifier)
-      .apl(ws)
-      .apl(r(/之?/))
+      .ap(quoted)
+      .apl(r(/之/))
       .apl(period)
   )
   .or(() =>
     pure(
-      (receiver: any) =>
-        (method: string): AST => ({
-          type: "APPLY_METHOD",
-          receiver,
-          method,
-        })
+      (method: string): AST => ({
+        type: "APPLY_METHOD",
+        receiver: ["this"],
+        method,
+      })
     )
-      .ap(variablePath)
-      .apl(ws)
-      .apl(r(/君?當(一併)?/))
-      .apl(ws)
-      .ap(identifier)
-      .apl(ws)
-      .apl(r(/之?/))
+      .apl(r(/吾欲/))
+      .ap(quoted)
+      .apl(r(/之/))
       .apl(period)
   );
 
@@ -276,10 +284,9 @@ const applyFunction = fail.or(() =>
       func,
     })
   )
-    .apl(r(/請(一併)?/))
+    .apl(r(/請君/))
     .apl(ws)
-    // .ap(variablePath)
-    .ap(identifier)
+    .ap(quoted)
     .apl(r(/之/))
     .apl(period)
 );
@@ -291,53 +298,13 @@ const applyOperator = fail.or(() =>
       op,
     })
   )
-    .apl(r(/請(一併)?/))
+    .apl(r(/請/))
     .apl(ws)
-    .ap(r(/[+\-*/]/))
+    .ap(quoted)
     .apl(ws)
     .apl(r(/之/))
     .apl(period)
 );
-
-const block = fail.or(() =>
-  pure(
-    (body: any[]): AST => ({
-      type: "BLOCK",
-      body,
-    })
-  )
-    .apl(r(/曰/))
-    .apl(ws)
-    .ap(instruction.sep(ws))
-    .apl(ws)
-    .apl(r(/云云/))
-    .apl(period)
-);
-
-const conditional = fail
-  .or(() =>
-    pure(
-      (body: AST): AST => ({
-        type: "IF_TRUE",
-        body,
-      })
-    )
-      .apl(r(/然後/))
-      .ap(instruction)
-      .apl(period)
-  )
-  .or(() =>
-    pure(
-      (body: AST): AST => ({
-        type: "IF_FALSE",
-        body,
-      })
-    )
-      .apl(r(/不然/))
-      .apl(r(/則/).or(() => period))
-      .ap(instruction)
-      .apl(period)
-  );
 
 const instruction: Parser<any, string> = fail
   .or(() => evalExpression)
