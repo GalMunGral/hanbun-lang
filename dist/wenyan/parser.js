@@ -82,7 +82,7 @@ const loadConst = fail
     type: "LOAD_CONST",
     value,
 }))
-    .apl(r(/有文曰/))
+    .apl(r(/有言曰/))
     .ap(quoted)
     .apl(period));
 const storeVar = fail
@@ -105,9 +105,9 @@ const evalExpression = fail.or(() => pure((value) => ({
     type: "EVAL_EXPR",
     value,
 }))
-    .apl(r(/唸/))
+    .apl(r(/言/))
     .ap(quoted)
-    .apl(r(/而得一物/))
+    .apl(r(/而生一物/))
     .apl(period));
 const domNode = fail.or(() => pure((tag) => ({
     type: "DOM_NODE",

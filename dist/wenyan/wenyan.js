@@ -19,7 +19,7 @@ const stringLiteral = fail.or(() =>
     type: "LOAD_STR",
     literal,
   }))
-    .apl(r(/有文曰/))
+    .apl(r(/有言曰/))
     .apl(ws)
     .apl(open)
     .ap(r(/[^」]+/))

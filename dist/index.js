@@ -1,7 +1,7 @@
 import { Err } from "./lib.js";
 import { interpret } from "./wenyan/vm.js";
 const script = `
-  唸「Object.create(null)」而得一物。是為「logger」。
+  言「Object.create(null)」而生一物。是為「logger」。
   其「alert」者。彼「window」之「alert」也。
 
   夫「logger」。
@@ -10,7 +10,7 @@ const script = `
     」
     聞「notify」而答曰「
       是為「消息」。吾欲「log」之。
-      有文曰「[文言lang-測試]」。有彼「消息」。請「+」之。
+      有言曰「[文言lang-測試]」。有彼「消息」。請「+」之。
       願「window」「alert」之。
     」
   
@@ -39,24 +39,24 @@ const script = `
     聞「randomize」而答曰「
       有彼「數字輸入框」之「value」。
         請君「parseInt」之。彼「次數」當如是。
-        唸「isNaN(次數)」而得一物。
+        言「isNaN(次數)」而生一物。
           然。曰「有數曰「0」。彼「次數」當如是。」
-      唸「Math.random()」而得一物。有彼「次數」。請「*」之。
+      言「Math.random()」而生一物。有彼「次數」。請「*」之。
         願「Math」「floor」之。
         彼「次數」當如是。
-      有文曰「當前重複次數為」。
+      有言曰「當前重複次數為」。
         有彼「次數」。請「+」之。
         彼「document」之「title」當如是。
-      有彼「次數」。有文曰「 x 隨機數(0-1) = 」。有彼「次數」。
+      有彼「次數」。有言曰「 x 隨機數(0-1) = 」。有彼「次數」。
         請「+」之。請「+」之。
         願「logger」「notify」之。
       有彼「次數」。願「文本框」之「value」「repeat」之。
         彼「顯示框」之「textContent」當如是。
     」
     聞「init」而答曰「
-      有文曰「請輸入您的姓名」。願「window」「prompt」之。是為「姓名」。
+      有言曰「請輸入您的姓名」。願「window」「prompt」之。是為「姓名」。
       然。曰「
-        有文曰「您好」。有彼「姓名」。請「+」之。
+        有言曰「您好」。有彼「姓名」。請「+」之。
         願「window」「alert」之。
         夫「文本框」。
           其「background-color」「#ffaaaa」。「color」「white」。
