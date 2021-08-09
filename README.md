@@ -35,7 +35,7 @@ HANBUN: Stack-based VM for UI Programming
 | `STORE_VAR` (path)             | `是為` `PATH` `。` <br> `或曰` `PATH` `。`<br> [ `彼` ] `PATH` `當如是` `。`          |
 | `SET_CURSOR`                   | `內`                                                                                  |
 | `SET_PROP` (name, path)        | `其` `QUOTE` `者` `。` `ws` [ `彼` ] `PATH` `也` `。`                                 |
-| `SET_PROP` (name, literal)     | `其` `QUOTE` `者` `。` `ws` `曰` `QUOTE` `也` `。` <br> [ `其` ] `QUOTE` `QUOTE` `。` |
+| `SET_PROP` (name, literal)     | `其` `QUOTE` `者` `。` `ws` `QUOTE` `也` `。` <br> [ `其` ] `QUOTE` `QUOTE` `。` |
 | `BLOCK` (body)                 | `曰` `「` `INSTRUCTION` { `ws` `INSTRUCTION` } `」`                                   |
 | `COND` (consequent, alternate) | [ `然` `。` `BLOCK` ] [ `不然` `。` `BLOCK` ]                                         |
 | `DEFN_MSG` (name, body)        | `聞` `QUOTE` `而` `BLOCK`                                                             |
