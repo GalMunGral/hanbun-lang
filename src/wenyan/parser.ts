@@ -98,7 +98,7 @@ const loadVar = fail.or(() =>
 const resetAndloadVar = fail.or(() =>
   pure(
     (path: string[]): AST => ({
-      type: "RST_LOAD_VAR",
+      type: "RST_VAR",
       path,
     })
   )
@@ -172,7 +172,7 @@ const evalExpression = fail.or(() =>
 const domNode = fail.or(() =>
   pure(
     (tag: string): AST => ({
-      type: "DOM_NODE",
+      type: "NODE",
       tag,
     })
   )
@@ -238,7 +238,7 @@ const defineMethod = fail.or(() =>
   pure(
     (name: string) =>
       (body: any[]): AST => ({
-        type: "DEF_METHOD",
+        type: "DEFN_MSG",
         name,
         body,
       })
@@ -254,7 +254,7 @@ const applyMethod = fail
     pure(
       (receiver: string[]) =>
         (method: string): AST => ({
-          type: "APPLY_METHOD",
+          type: "SEND_MSG",
           receiver,
           method,
         })
@@ -268,7 +268,7 @@ const applyMethod = fail
   .or(() =>
     pure(
       (method: string): AST => ({
-        type: "APPLY_METHOD",
+        type: "SEND_MSG",
         receiver: ["this"],
         method,
       })

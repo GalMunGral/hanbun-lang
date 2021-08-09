@@ -23,23 +23,23 @@ HANBUN: Stack-based VM for UI Programming
 | `SCOPE` | `吾` <br> `QUOTE`        |
 | `PATH`  | `SCOPE` { `之` `QUOTE` } |
 
-| INSTRUCTION                        | PRODUCTION RULE                                                                       |
-| ---------------------------------- | ------------------------------------------------------------------------------------- |
-| `RST_LOAD_VAR` `path`              | `夫` `QUOTE` `。`                                                                     |
-| `LOAD_VAR` `path`                  | [ `吾` ] `有` [ `彼` ] `QUOTE` `。`                                                   |
-| `LOAD_CONST` `literal`             | `有數曰` `QUOTE` `。` <br> `有文曰` `QUOTE` `。`                                      |
-| `DOM_NODE` `tag`                   | `有` `QUOTE` `。`                                                                     |
-| `EVAL_EXPR` `expr`                 | `言` `QUOTE` ` 而生一物` `。`                                                         |
-| `SET_CURSOR`                       | `內`                                                                                  |
-| `STORE_VAR` `path`                 | `是為` `PATH` `。` <br> `或曰` `PATH` `。`<br> [ `彼` ] `PATH` `當如是` `。`          |
-| `SET_PROP` `name` `path`           | `其` `QUOTE` `者` `。` `ws` [ `彼` ] `PATH` `也` `。`                                 |
-| `SET_PROP` `name` `literal`        | `其` `QUOTE` `者` `。` `ws` `曰` `QUOTE` `也` `。` <br> [ `其` ] `QUOTE` `QUOTE` `。` |
-| `BLOCK` `body`                     | `曰` `「` `INSTRUCTION` { `ws` `INSTRUCTION` } `」`                                   |
-| `COND` `consequent` `alternate`    | [ `然` `。` `BLOCK` ] [ `不然` `。` `BLOCK` ]                                         |
-| `DEF_METHOD` `name` `body`         | `聞` `QUOTE` `而答` `BLOCK`                                                           |
-| `APPLY_METHOD` `receiver` `method` | `望` [ `彼` ] `PATH` `QUOTE` `之` `。` <br> `吾欲` `QUOTE` `之` `。`                  |
-| `APPLY_FUNC` `func`                | `請君` `QUOTE` `之` `。`                                                              |
-| `APPLY_OP` `op`                    | `請` `QUOTE` `之` `。`                                                                |
+| INSTRUCTION                    | PRODUCTION RULE                                                                       |
+| ------------------------------ | ------------------------------------------------------------------------------------- |
+| `RST_VAR` (path)               | `夫` `QUOTE` `。`                                                                     |
+| `LOAD_VAR` (path)              | [ `吾` ] `有` [ `彼` ] `QUOTE` `。`                                                   |
+| `LOAD_CONST` (literal)         | `有數曰` `QUOTE` `。` <br> `有文曰` `QUOTE` `。`                                      |
+| `NODE` (type)                  | `有` `QUOTE` `。`                                                                     |
+| `EVAL_EXPR` (expr)             | `言` `QUOTE` ` 而生一物` `。`                                                         |
+| `APPLY_OP` `op`                | `請` `QUOTE` `之` `。                                                                 |
+| `APPLY_FUNC` `func`            | `請君` `QUOTE` `之` `。`                                                              |
+| `STORE_VAR` (path)             | `是為` `PATH` `。` <br> `或曰` `PATH` `。`<br> [ `彼` ] `PATH` `當如是` `。`          |
+| `SET_CURSOR`                   | `內`                                                                                  |
+| `SET_PROP` (name, path)        | `其` `QUOTE` `者` `。` `ws` [ `彼` ] `PATH` `也` `。`                                 |
+| `SET_PROP` (name, literal)     | `其` `QUOTE` `者` `。` `ws` `曰` `QUOTE` `也` `。` <br> [ `其` ] `QUOTE` `QUOTE` `。` |
+| `BLOCK` (body)                 | `曰` `「` `INSTRUCTION` { `ws` `INSTRUCTION` } `」`                                   |
+| `COND` (consequent, alternate) | [ `然` `。` `BLOCK` ] [ `不然` `。` `BLOCK` ]                                         |
+| `DEFN_MSG` (name, body)        | `聞` `QUOTE` `而` `BLOCK`                                                             |
+| `SEND_MSG` (receiver, method)  | `望` [ `彼` ] `PATH` `QUOTE` `之` `。` <br> `吾欲` `QUOTE` `之` `。`                  |
 
 ## II. A More Elaborate Example
 
@@ -115,9 +115,9 @@ HANBUN: Stack-based VM for UI Programming
 
     聞「randomize」而曰「
         有彼「數字輸入框」之「value」。
-        請君「parseInt」之。是為「次數」。
-        言「isNaN(次數)」而生一物。
-            然。曰「有數曰「0」。彼「次數」當如是。」
+            請君「parseInt」之。是為「次數」。
+            言「isNaN(次數)」而生一物。
+                然。曰「有數曰「0」。彼「次數」當如是。」
 
         吾有「次數」。彼「原次數」當如是。
             言「Math.random()」而生一物。請「*」之。
@@ -128,11 +128,13 @@ HANBUN: Stack-based VM for UI Programming
             有彼「次數」。請「+」之。
             彼「document」之「title」當如是。
 
-        有彼「原次數」。有言曰「 x 隨機數(0-1) = 」。有彼「次數」。
-            請「+」之。請「+」之。
+        有彼「原次數」。
+            有言曰「 x 隨機數(0-1) = 」。請「+」之。
+            有彼「次數」。請「+」之。
             望「logger」「notify」之。
 
-        有彼「次數」。望「文本框」之「value」「repeat」之。
+        有彼「次數」。
+            望「文本框」之「value」「repeat」之。
             彼「顯示框」之「textContent」當如是。
         」
 ```

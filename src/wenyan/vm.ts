@@ -38,7 +38,7 @@ class WenyanVM {
         this.cursor = document.body;
         break;
       }
-      case "RST_LOAD_VAR": {
+      case "RST_VAR": {
         this.stack = [];
         this.cursor = document.body;
         this.stack.push(this.get(inst.path, context));
@@ -61,7 +61,7 @@ class WenyanVM {
         break;
       }
 
-      case "DOM_NODE": {
+      case "NODE": {
         const node = document.createElement(inst.tag);
         this.stack.push(node);
         this.cursor.append(node);
@@ -90,7 +90,7 @@ class WenyanVM {
         this.stack.push(result);
         break;
       }
-      case "DEF_METHOD": {
+      case "DEFN_MSG": {
         const receiver = last(this.stack);
         const thisVM = this;
         const fn = function (argument: any) {
@@ -105,7 +105,7 @@ class WenyanVM {
         }
         break;
       }
-      case "APPLY_METHOD": {
+      case "SEND_MSG": {
         const receiver = this.get(inst.receiver, context);
         const argument = this.stack.pop();
         const result = receiver[inst.method](argument);

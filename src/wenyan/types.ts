@@ -14,7 +14,7 @@ export type AST =
       path: string[];
     }
   | {
-      type: "RST_LOAD_VAR";
+      type: "RST_VAR";
       path: string[];
     }
   | {
@@ -26,7 +26,7 @@ export type AST =
       value: string;
     }
   | {
-      type: "DOM_NODE";
+      type: "NODE";
       tag: string;
     }
   | {
@@ -36,12 +36,12 @@ export type AST =
       path?: string[];
     }
   | {
-      type: "DEF_METHOD";
+      type: "DEFN_MSG";
       name: string;
       body: AST[];
     }
   | {
-      type: "APPLY_METHOD";
+      type: "SEND_MSG";
       receiver: string[];
       method: string;
     }
