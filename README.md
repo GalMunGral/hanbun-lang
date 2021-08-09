@@ -3,13 +3,13 @@ HANBUN - Stack-based VM for UI Programming
 
 ## I. Instruction Set and Grammar
 
-| SYMBOL | PRODUCTION           |
+| SYMBOL | PRODUCTION RULE           |
 | ------ | -------------------- |
 | `QUOTE`  | `「` `CHAR` `」`       |
 | `SCOPE`  | `吾` <br> `QUOTE`      |
 | `PATH`   | `SCOPE` { `之` `QUOTE` } |
 
-| INSTRUCTION                      | PRODUCTION                                                                    |
+| INSTRUCTION                      | PRODUCTION RULE                                                                   |
 | -------------------------------- | ----------------------------------------------------------------------------- |
 | `RST_LOAD_VAR` `path`              | `夫` `QUOTE` `。`                                                               |
 | `LOAD_VAR` `path`                  | [ `吾` ] `有` [ `彼` ] `QUOTE` `。`                                             |
