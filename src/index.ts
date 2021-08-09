@@ -7,11 +7,11 @@ const script = `
 
   夫「logger」。
     聞「log」而答曰「
-      願「console」「debug」之。吾有彼「text」。
+      願「console」「debug」之。吾有彼「消息」。
     」
     聞「notify」而答曰「
-      是為「text」。吾欲「log」之。
-      有文曰「[文言lang-測試]」。有彼「text」。請「+」之。
+      是為「消息」。吾欲「log」之。
+      有文曰「[文言lang-測試]」。有彼「消息」。請「+」之。
       願「window」「alert」之。
     」
   
