@@ -5,27 +5,27 @@ HANBUN - Stack-based VM for UI Programming
 
 | SYMBOL | PRODUCTION           |
 | ------ | -------------------- |
-| QUOTE  | `「` CHAR `」`       |
-| SCOPE  | `吾` <br> QUOTE      |
-| PATH   | SCOPE { `之` QUOTE } |
+| `QUOTE`  | `「` `CHAR` `」`       |
+| `SCOPE`  | `吾` <br> `QUOTE`      |
+| `PATH`   | `SCOPE` { `之` `QUOTE` } |
 
 | INSTRUCTION                      | PRODUCTION                                                                    |
 | -------------------------------- | ----------------------------------------------------------------------------- |
-| RST_LOAD_VAR `path`              | `夫` QUOTE `。`                                                               |
-| LOAD_VAR `path`                  | [ `吾` ] `有` [ `彼` ] QUOTE `。`                                             |
-| LOAD_CONST `literal`             | `有數曰` QUOTE `。` <br> `有文曰` QUOTE `。`                                  |
-| DOM_NODE `tag`                   | `有` QUOTE `。`                                                               |
-| EVAL_EXPR `expr`                 | `言` QUOTE ` 而生一物` `。`                                                   |
-| SET_CURSOR                       | `內`                                                                          |
-| STORE_VAR `path`                 | `是為` PATH `。` <br> `或曰` PATH `。`<br> [ `彼` ] PATH 當如是 `。`          |
-| SET_PROP `name` `path`           | `其` QUOTE `者` `。` `ws` [ `彼` ] PATH `也` `。`                             |
-| SET_PROP `name` `literal`        | `其` QUOTE `者` `。` `ws` `曰` QUOTE `也` `。` <br> [ `其` ] QUOTE QUOTE `。` |
-| BLOCK `body`                     | `曰` `「` INSTRUCTION { `ws` INSTRUCTION } `」`                               |
-| COND `consequent` `alternate`    | [ `然` `。` BLOCK ] [ `不然` `。` BLOCK ]                                     |
-| DEF_METHOD `name` `body`         | `聞` QUOTE `而答` BLOCK                                                       |
-| APPLY_METHOD `receiver` `method` | `願` [ `彼` ] PATH QUOTE `之` `。` <br> `吾欲` QUOTE `之` `。`                |
-| APPLY_FUNC `func`                | `請君` QUOTE `之` `。`                                                        |
-| APPLY_OP `op`                    | `請` QUOTE `之` `。`                                                          |
+| `RST_LOAD_VAR` `path`              | `夫` `QUOTE` `。`                                                               |
+| `LOAD_VAR` `path`                  | [ `吾` ] `有` [ `彼` ] `QUOTE` `。`                                             |
+| `LOAD_CONST` `literal`             | `有數曰` `QUOTE` `。` <br> `有文曰` `QUOTE` `。`                                  |
+| `DOM_NODE` `tag`                   | `有` `QUOTE` `。`                                                               |
+| `EVAL_EXPR` `expr`                 | `言` `QUOTE` ` 而生一物` `。`                                                   |
+| `SET_CURSOR`                       | `內`                                                                          |
+| `STORE_VAR` `path`                 | `是為` `PATH` `。` <br> `或曰` `PATH` `。`<br> [ `彼` ] `PATH` `當如是` `。`          |
+| `SET_PROP` `name` `path`           | `其` `QUOTE` `者` `。` `ws` [ `彼` ] `PATH` `也` `。`                             |
+| `SET_PROP` `name` `literal`        | `其` `QUOTE` `者` `。` `ws` `曰` `QUOTE` `也` `。` <br> [ `其` ] `QUOTE` `QUOTE` `。` |
+| `BLOCK` `body`                     | `曰` `「` `INSTRUCTION` { `ws` `INSTRUCTION` } `」`                               |
+| `COND` `consequent` `alternate`    | [ `然` `。` `BLOCK` ] [ `不然` `。` `BLOCK` ]                                     |
+| `DEF_METHOD` `name` `body`         | `聞` `QUOTE` `而答` `BLOCK`                                                       |
+| `APPLY_METHOD` `receiver` `method` | `願` [ `彼` ] `PATH` `QUOTE` `之` `。` <br> `吾欲` `QUOTE` `之` `。`                |
+| `APPLY_FUNC` `func`                | `請君` `QUOTE` `之` `。`                                                        |
+| `APPLY_OP` `op`                    | `請` `QUOTE` `之` `。`                                                          |
 
 ## II. Sample Code
 
