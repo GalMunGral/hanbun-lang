@@ -39,7 +39,7 @@ HANBUN: Stack-based VM for UI Programming
 | `BLOCK` (body)                 | `曰` `「` `INSTRUCTION` { `ws` `INSTRUCTION` } `」`                                   |
 | `COND` (consequent, alternate) | [ `然` `。` `BLOCK` ] [ `不然` `。` `BLOCK` ]                                         |
 | `DEFN_MSG` (name, body)        | `聞` `QUOTE` `而` `BLOCK`                                                             |
-| `SEND_MSG` (receiver, method)  | `望` [ `彼` ] `PATH` `QUOTE` `之` `。` <br> `吾欲` `QUOTE` `之` `。`                  |
+| `SEND_MSG` (target, msg)  | `望` [ `彼` ] `PATH` `QUOTE` `之` `。` <br> `吾欲` `QUOTE` `之` `。`                  |
 
 ## II. A More Elaborate Example
 
