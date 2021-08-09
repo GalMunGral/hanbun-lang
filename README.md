@@ -1,4 +1,5 @@
-# 漢文 - Stack-based VM for UI Programming
+# 漢文 (한문, かんぶん)
+HANBUN - Stack-based VM for UI Programming
 
 ## I. Instruction Set and Grammar
 
