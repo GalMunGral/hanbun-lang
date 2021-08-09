@@ -1,4 +1,3 @@
-import { Err } from "./lib.js";
 import { interpret } from "./wenyan/vm.js";
 const script = `
   言「Object.create(null)」而生一物。是為「logger」。
@@ -72,4 +71,4 @@ const script = `
     」
 `;
 console.log(interpret(script));
-console.log(Err.last);
+// console.log(Err.last);

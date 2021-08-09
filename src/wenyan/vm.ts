@@ -26,7 +26,7 @@ class WenyanVM {
 
   private execute(inst: AST, context?: any) {
     console.group(inst.type);
-    console.debug(inst);
+    // console.debug(inst);
     switch (inst.type) {
       case "SET_CURSOR": {
         this.cursor = this.stack.pop();
@@ -81,12 +81,12 @@ class WenyanVM {
         break;
       }
       case "COND": {
-        const result = last(this.stack);
-        if (result) {
-          this.run(inst.consequent, context);
-        } else {
-          this.run(inst.alternate, context);
-        }
+        const test = this.stack.pop();
+        const result = this.run(
+          test ? inst.consequent : inst.alternate,
+          context
+        );
+        this.stack.push(result);
         break;
       }
       case "DEF_METHOD": {
@@ -135,6 +135,7 @@ class WenyanVM {
       default:
         console.log(inst);
     }
+    // console.log([...this.stack]);
     console.groupEnd();
   }
 

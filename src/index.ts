@@ -74,4 +74,4 @@ const script = `
 `;
 
 console.log(interpret(script));
-console.log(Err.last);
+// console.log(Err.last);
