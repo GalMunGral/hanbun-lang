@@ -23,7 +23,7 @@ HANBUN: Stack-based VM for UI Programming
 | `SCOPE` | `吾` <br> `QUOTE`        |
 | `PATH`  | `SCOPE` { `之` `QUOTE` } |
 
-| INSTRUCTION                    | PRODUCTION RULE                                                                       |
+| INSTRUCTION / SYMBOL           | PRODUCTION RULE                                                                       |
 | ------------------------------ | ------------------------------------------------------------------------------------- |
 | `RST_VAR` (path)               | `夫` `QUOTE` `。`                                                                     |
 | `LOAD_VAR` (path)              | [ `吾` ] `有` [ `彼` ] `QUOTE` `。`                                                   |
