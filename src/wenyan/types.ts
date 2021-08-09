@@ -3,9 +3,6 @@ export type AST =
       type: "RST";
     }
   | {
-      type: "POP";
-    }
-  | {
       type: "SET_CURSOR";
     }
   | {
@@ -25,17 +22,12 @@ export type AST =
       value: string;
     }
   | {
-      type: "LOAD_STR";
-      value: string;
-    }
-  | {
       type: "EVAL_EXPR";
       value: string;
     }
   | {
       type: "DOM_NODE";
       tag: string;
-      name?: string;
     }
   | {
       type: "SET_PROP";

@@ -64,9 +64,6 @@ class WenyanVM {
         const node = document.createElement(inst.tag);
         this.stack.push(node);
         this.cursor.append(node);
-        if (inst.name) {
-          window[inst.name] = node;
-        }
         break;
       }
       case "SET_PROP": {
