@@ -153,3 +153,4 @@ export function interpret(script) {
     })
         .parse(script);
 }
+window["interpret"] = interpret;

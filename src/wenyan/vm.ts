@@ -160,3 +160,5 @@ export function interpret(script: string) {
     })
     .parse(script);
 }
+
+window["interpret"] = interpret;

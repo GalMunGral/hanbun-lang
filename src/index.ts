@@ -20,10 +20,13 @@ const script = `
       内有「div」。
         其「padding」「10px」。「display」「flow-root」。
           「background-color」「pink」。「font-weight」「bold」。
-        内有「label」。其「textContent」者。曰「重複次數」也。
+        内有「label」。
+          其「textContent」者。曰「重複次數」也。
         有「input」。或曰「數字輸入框」。其「display」「block」。
-        有「button」。或曰「按鍵」。其「textContent」者。曰「更新」也。
-        有「label」。其「textContent」者。曰「輸入」也。
+        有「button」。或曰「按鍵」。
+          其「textContent」者。曰「更新」也。
+        有「label」。
+          其「textContent」者。曰「輸入」也。
         有「input」。或曰「文本框」。其「display」「block」。
   
   夫「容器」。
