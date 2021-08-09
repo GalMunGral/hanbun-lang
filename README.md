@@ -29,6 +29,22 @@ HANBUN - Stack-based VM for UI Programming
 
 ## II. Sample Code
 
+### Factorial
+
+```
+夫「globalThis」。
+聞「factorial」而答曰「
+    是為「數」。有數曰「2」。請「<」之。
+    然。曰「 吾有彼「數」。」
+    不然。曰「 
+        吾有彼「數」。
+        有彼「數」。有數曰「1」。請「-」之。
+        請君「factorial」之。請「*」之。
+    」
+」
+```
+### A simple application
+
 ```
 言「Object.create(null)」而生一物。是為「logger」。
 其「alert」者。彼「window」之「alert」也。
