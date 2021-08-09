@@ -5,7 +5,10 @@ function last(arr) {
     }
     return null;
 }
-class WenyanVM {
+export function interpret(script) {
+    parser.map((program) => new HBVM().run(program)).parse(script);
+}
+class HBVM {
     stack = [];
     base = 0;
     cursor = null;
@@ -18,6 +21,17 @@ class WenyanVM {
     }
     set(path, value, context) {
         this.get(path.slice(0, -1), context)[last(path)] = value;
+    }
+    run(program, context) {
+        const prevBase = this.base;
+        this.base = this.stack.length;
+        program.forEach((inst) => {
+            this.execute(inst, context);
+        });
+        const result = last(this.stack);
+        this.stack.length = this.base;
+        this.base = prevBase;
+        return result;
     }
     execute(inst, context) {
         console.group(...Object.values(inst));
@@ -133,23 +147,5 @@ class WenyanVM {
         console.debug("after:", [...this.stack], this.base);
         console.groupEnd();
     }
-    run(program, context) {
-        const prevBase = this.base;
-        this.base = this.stack.length;
-        program.forEach((inst) => {
-            this.execute(inst, context);
-        });
-        const result = last(this.stack);
-        this.stack.length = this.base;
-        this.base = prevBase;
-        return result;
-    }
-}
-export function interpret(script) {
-    parser
-        .map((program) => {
-        new WenyanVM().run(program);
-    })
-        .parse(script);
 }
 window["interpret"] = interpret;
