@@ -30,8 +30,8 @@ HANBUN: Stack-based VM for UI Programming
 | `LOAD_CONST` (literal)         | `有數曰` `QUOTE` `。` <br> `有文曰` `QUOTE` `。`                                      |
 | `NODE` (type)                  | `有` `QUOTE` `。`                                                                     |
 | `EVAL_EXPR` (expr)             | `言` `QUOTE` ` 而生一物` `。`                                                         |
-| `APPLY_OP` `op`                | `請` `QUOTE` `之` `。`                                                                |
-| `APPLY_FUNC` `func`            | `請君` `QUOTE` `之` `。`                                                              |
+| `APPLY_OP` (op)                | `請` `QUOTE` `之` `。`                                                                |
+| `APPLY_FUNC` (func)            | `請君` `QUOTE` `之` `。`                                                              |
 | `STORE_VAR` (path)             | `是為` `PATH` `。` <br> `或曰` `PATH` `。`<br> [ `彼` ] `PATH` `當如是` `。`          |
 | `SET_CURSOR`                   | `內`                                                                                  |
 | `SET_PROP` (name, path)        | `其` `QUOTE` `者` `。` `ws` [ `彼` ] `PATH` `也` `。`                                 |

@@ -1,4 +1,3 @@
-import { Err } from "./lib.js";
 import { parser } from "./index.js";
 import { AST } from "./types.js";
 
@@ -9,7 +8,11 @@ function last<T>(arr: T[]): T {
   return null;
 }
 
-class WenyanVM {
+export function interpret(script: string) {
+  parser.map((program) => new HBVM().run(program)).parse(script);
+}
+
+class HBVM {
   private stack: any[] = [];
   private base = 0;
   private cursor: HTMLElement | null = null;
@@ -23,6 +26,18 @@ class WenyanVM {
 
   set(path: string[], value: any, context: any) {
     this.get(path.slice(0, -1), context)[last(path)] = value;
+  }
+
+  public run(program: AST[], context?: any) {
+    const prevBase = this.base;
+    this.base = this.stack.length;
+    program.forEach((inst) => {
+      this.execute(inst, context);
+    });
+    const result = last(this.stack);
+    this.stack.length = this.base;
+    this.base = prevBase;
+    return result;
   }
 
   private execute(inst: AST, context?: any) {
@@ -142,26 +157,6 @@ class WenyanVM {
     console.debug("after:", [...this.stack], this.base);
     console.groupEnd();
   }
-
-  public run(program: AST[], context?: any) {
-    const prevBase = this.base;
-    this.base = this.stack.length;
-    program.forEach((inst) => {
-      this.execute(inst, context);
-    });
-    const result = last(this.stack);
-    this.stack.length = this.base;
-    this.base = prevBase;
-    return result;
-  }
-}
-
-export function interpret(script: string) {
-  parser
-    .map((program) => {
-      new WenyanVM().run(program);
-    })
-    .parse(script);
 }
 
 window["interpret"] = interpret;
