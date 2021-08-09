@@ -19,7 +19,7 @@ class WenyanVM {
         this.get(path.slice(0, -1), context)[last(path)] = value;
     }
     execute(inst, context) {
-        console.group(inst.type);
+        console.group(...Object.values(inst));
         // console.debug(inst);
         switch (inst.type) {
             case "SET_CURSOR": {
@@ -27,6 +27,7 @@ class WenyanVM {
                 break;
             }
             case "RST": {
+                // TODO: THIS IS WRONG, IT SHOULD ONLY CLEAR THE PART IT OWNS
                 this.stack = [];
                 this.cursor = document.body;
                 break;

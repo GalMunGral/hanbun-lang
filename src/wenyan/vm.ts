@@ -1,4 +1,4 @@
-import { Err } from "../lib.js";
+import { Err } from "./lib.js";
 import { parser } from "./index.js";
 import { AST } from "./types.js";
 
@@ -25,7 +25,7 @@ class WenyanVM {
   }
 
   private execute(inst: AST, context?: any) {
-    console.group(inst.type);
+    console.group(...Object.values(inst));
     // console.debug(inst);
     switch (inst.type) {
       case "SET_CURSOR": {
@@ -33,6 +33,7 @@ class WenyanVM {
         break;
       }
       case "RST": {
+        // TODO: THIS IS WRONG, IT SHOULD ONLY CLEAR THE PART IT OWNS
         this.stack = [];
         this.cursor = document.body;
         break;

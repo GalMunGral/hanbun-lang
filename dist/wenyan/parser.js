@@ -1,4 +1,4 @@
-import { Ok, Err, Parser, fail, pure } from "../lib.js";
+import { Ok, Err, Parser, fail, pure } from "./lib.js";
 const r = (r) => new Parser((s) => {
     const match = s.match(r);
     if (match == null || (match.index && match.index > 0)) {
@@ -127,7 +127,7 @@ const setProperty = fail
     .apl(r(/者/))
     .apl(period)
     .apl(ws)
-    .apl(r(/彼?/))
+    .apl(r(/彼/))
     .ap(variablePath)
     .apl(r(/也/))
     .apl(period))
@@ -141,7 +141,6 @@ const setProperty = fail
     .apl(r(/者/))
     .apl(period)
     .apl(ws)
-    .apl(r(/曰/))
     .ap(quoted)
     .apl(r(/也/))
     .apl(period))
@@ -161,7 +160,7 @@ const defineMethod = fail.or(() => pure((name) => (body) => ({
 }))
     .apl(r(/聞/))
     .ap(quoted)
-    .apl(r(/而答/))
+    .apl(r(/而/))
     .ap(block.map((b) => b.body)));
 const applyMethod = fail
     .or(() => pure((receiver) => (method) => ({
@@ -169,7 +168,7 @@ const applyMethod = fail
     receiver,
     method,
 }))
-    .apl(r(/願/))
+    .apl(r(/望/))
     .ap(variablePath)
     .ap(quoted)
     .apl(r(/之/))
