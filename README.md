@@ -57,7 +57,7 @@ HANBUN: Stack-based VM for UI Programming
         望「window」「alert」之。
     」
 
-有彼「document」之「body」。
+夫「document」之「body」。
     内有「div」。或曰「容器」。
     内有「div」。
         其「padding」「10px」。
@@ -87,9 +87,9 @@ HANBUN: Stack-based VM for UI Programming
       「margin」「10px」。
 
     聞「click」而曰「
-        有彼「INITIALIZED」。不然。
+        夫「INITIALIZED」。不然。
             曰「吾欲「init」之。」
-        有彼「INITIALIZED」。然。
+        夫「INITIALIZED」。然。
             曰「吾欲「randomize」之。」
     」
 
@@ -114,27 +114,26 @@ HANBUN: Stack-based VM for UI Programming
     」
 
     聞「randomize」而曰「
-        有彼「數字輸入框」之「value」。
+        夫「數字輸入框」之「value」。
             請君「parseInt」之。是為「次數」。
-            言「isNaN(次數)」而生一物。
+            請君「isNaN」之。
                 然。曰「有數曰「0」。彼「次數」當如是。」
 
-        吾有「次數」。彼「原次數」當如是。
+        夫「次數」。彼「原次數」當如是。
             言「Math.random()」而生一物。請「*」之。
             望「Math」「floor」之。
             彼「次數」當如是。
 
-        有言曰「當前重複次數為」。
+        有言曰「當前重複次數為 」。
             有彼「次數」。請「+」之。
             彼「document」之「title」當如是。
 
-        有彼「原次數」。
-            有言曰「 x 隨機數(0-1) = 」。請「+」之。
-            有彼「次數」。請「+」之。
+        有彼「原次數」。有言曰「 x 隨機數(0-1) = 」。有彼「次數」。
+            請「+」之。請「+」之。
             望「logger」「notify」之。
 
-        有彼「次數」。
+        夫「次數」。
             望「文本框」之「value」「repeat」之。
             彼「顯示框」之「textContent」當如是。
-        」
+    」
 ```

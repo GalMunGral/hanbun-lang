@@ -11,6 +11,7 @@ function last<T>(arr: T[]): T {
 
 class WenyanVM {
   private stack: any[] = [];
+  private base = 0;
   private cursor: HTMLElement | null = null;
 
   get(path: string[], context: any) {
@@ -26,15 +27,14 @@ class WenyanVM {
 
   private execute(inst: AST, context?: any) {
     console.group(...Object.values(inst));
-    // console.debug(inst);
+    console.debug("before:", [...this.stack], this.base);
     switch (inst.type) {
       case "SET_CURSOR": {
         this.cursor = this.stack.pop();
         break;
       }
       case "RST": {
-        // TODO: THIS IS WRONG, IT SHOULD ONLY CLEAR THE PART IT OWNS
-        this.stack = [];
+        this.stack.length = this.base;
         this.cursor = document.body;
         break;
       }
@@ -136,18 +136,22 @@ class WenyanVM {
       default:
         console.log(inst);
     }
-    // console.log([...this.stack]);
+    if (this.stack.length < this.base) {
+      throw "STACK IS EMPTY";
+    }
+    console.debug("after:", [...this.stack], this.base);
     console.groupEnd();
   }
 
   public run(program: AST[], context?: any) {
-    const position = this.stack.length;
+    const prevBase = this.base;
+    this.base = this.stack.length;
     program.forEach((inst) => {
       this.execute(inst, context);
     });
     const result = last(this.stack);
-    this.stack.length = position;
-    this.cursor = null;
+    this.stack.length = this.base;
+    this.base = prevBase;
     return result;
   }
 }
