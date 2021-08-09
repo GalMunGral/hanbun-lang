@@ -41,7 +41,7 @@ const conditional = fail
     pure(
       (consequent: AST[]) =>
         (alternate: AST[]): AST => ({
-          type: "BRANCH",
+          type: "COND",
           consequent,
           alternate,
         })
@@ -57,7 +57,7 @@ const conditional = fail
   .or(() =>
     pure(
       (alternate: AST[]): AST => ({
-        type: "BRANCH",
+        type: "COND",
         consequent: [],
         alternate,
       })
@@ -69,7 +69,7 @@ const conditional = fail
   .or(() =>
     pure(
       (consequent: AST[]): AST => ({
-        type: "BRANCH",
+        type: "COND",
         consequent,
         alternate: [],
       })

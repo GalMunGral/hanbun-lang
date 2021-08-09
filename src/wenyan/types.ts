@@ -58,7 +58,7 @@ export type AST =
       body: AST[];
     }
   | {
-      type: "BRANCH";
+      type: "COND";
       consequent: AST[];
       alternate: AST[];
     };

@@ -73,7 +73,7 @@ class WenyanVM {
                 this.stack.push(result);
                 break;
             }
-            case "BRANCH": {
+            case "COND": {
                 const result = last(this.stack);
                 if (result) {
                     this.run(inst.consequent, context);

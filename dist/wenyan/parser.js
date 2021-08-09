@@ -26,7 +26,7 @@ const block = fail.or(() => pure((body) => ({
     .apl(r(/」/)));
 const conditional = fail
     .or(() => pure((consequent) => (alternate) => ({
-    type: "BRANCH",
+    type: "COND",
     consequent,
     alternate,
 }))
@@ -38,7 +38,7 @@ const conditional = fail
     .apl(ws)
     .ap(block.map((b) => b.body)))
     .or(() => pure((alternate) => ({
-    type: "BRANCH",
+    type: "COND",
     consequent: [],
     alternate,
 }))
@@ -46,7 +46,7 @@ const conditional = fail
     .apl(ws)
     .ap(block.map((b) => b.body)))
     .or(() => pure((consequent) => ({
-    type: "BRANCH",
+    type: "COND",
     consequent,
     alternate: [],
 }))
