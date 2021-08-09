@@ -68,6 +68,20 @@ HANBUN - Stack-based VM for UI Programming
     有彼「INITIALIZED」。不然。曰「吾欲「init」之。」
     吾欲「randomize」之。
   」
+  聞「init」而答曰「
+    有言曰「請輸入您的姓名」。願「window」「prompt」之。是為「姓名」。
+    然。曰「
+      有言曰「您好」。有彼「姓名」。請「+」之。
+      願「window」「alert」之。
+      夫「文本框」。
+        其「background-color」「#ffaaaa」。「color」「white」。
+        聞「input」而答曰「
+          有彼「次數」。願吾之「value」「repeat」之。
+          彼「顯示框」之「textContent」當如是。
+        」
+      有數曰「1」。彼「INITIALIZED」當如是。
+    」
+  」
   聞「randomize」而答曰「
     有彼「數字輸入框」之「value」。
       請君「parseInt」之。彼「次數」當如是。
@@ -84,19 +98,5 @@ HANBUN - Stack-based VM for UI Programming
       願「logger」「notify」之。
     有彼「次數」。願「文本框」之「value」「repeat」之。
       彼「顯示框」之「textContent」當如是。
-  」
-  聞「init」而答曰「
-    有言曰「請輸入您的姓名」。願「window」「prompt」之。是為「姓名」。
-    然。曰「
-      有言曰「您好」。有彼「姓名」。請「+」之。
-      願「window」「alert」之。
-      夫「文本框」。
-        其「background-color」「#ffaaaa」。「color」「white」。
-        聞「input」而答曰「
-          有彼「次數」。願吾之「value」「repeat」之。
-          彼「顯示框」之「textContent」當如是。
-        」
-      有數曰「1」。彼「INITIALIZED」當如是。
-    」
   」
 ```
