@@ -1,5 +1,5 @@
 import { parser } from "./index.js";
-import { print, printAll } from "./print.js";
+import { print } from "./print.js";
 function last(arr) {
     if (arr.length) {
         return arr[arr.length - 1];
@@ -7,22 +7,18 @@ function last(arr) {
     return null;
 }
 export function interpret(script) {
-    parser
-        .map((program) => {
-        console.debug(printAll(program));
-        new HBVM().run(program);
-    })
-        .parse(script);
+    parser.map((program) => new HBVM().run(program)).parse(script);
 }
 class HBVM {
+    static root = typeof window != "undefined" ? document.body : null;
+    cursor = HBVM.root;
     stack = [];
     base = 0;
-    cursor = null;
     get(path, context) {
         if (path.length == 0)
-            return window;
+            return globalThis;
         const [scope, ...scopedPath] = path;
-        const root = scope === "this" ? context : window[scope];
+        const root = scope === "this" ? context : globalThis[scope];
         return scopedPath.reduce((node, name) => node[name], root);
     }
     set(path, value, context) {
@@ -35,27 +31,27 @@ class HBVM {
             this.execute(inst, context);
         });
         const result = last(this.stack);
-        this.stack.length = this.base;
+        // this.stack.length = this.base;
+        this.stack = this.stack.slice(0, this.base);
         this.base = prevBase;
         return result;
     }
     execute(inst, context) {
-        console.debug(print(inst));
-        // console.group(...Object.values(inst));
-        // console.debug("before:", [...this.stack], this.base);
+        console.group(print(inst));
         switch (inst.type) {
             case "SET_CURSOR": {
                 this.cursor = this.stack.pop();
                 break;
             }
             case "RST": {
-                this.stack.length = this.base;
-                this.cursor = document.body;
+                // this.stack.length = this.base;
+                this.stack = this.stack.slice(0, this.base);
+                this.cursor = HBVM.root;
                 break;
             }
             case "RST_VAR": {
                 this.stack = [];
-                this.cursor = document.body;
+                this.cursor = HBVM.root;
                 this.stack.push(this.get(inst.path, context));
                 break;
             }
@@ -85,7 +81,7 @@ class HBVM {
                 const receiver = last(this.stack);
                 const value = inst.path ? this.get(inst.path, context) : inst.literal;
                 receiver[inst.name] = value;
-                if (receiver instanceof HTMLElement) {
+                if (typeof window != "undefined" && receiver instanceof HTMLElement) {
                     receiver.style[inst.name] = value;
                 }
                 break;
@@ -111,7 +107,7 @@ class HBVM {
                     return result;
                 };
                 receiver[inst.name] = fn;
-                if (receiver instanceof HTMLElement) {
+                if (typeof window != "undefined" && receiver instanceof HTMLElement) {
                     receiver["on" + inst.name] = fn;
                 }
                 break;
@@ -124,7 +120,7 @@ class HBVM {
                 break;
             }
             case "APPLY_FUNC": {
-                const func = window[inst.func];
+                const func = globalThis[inst.func];
                 const argument = this.stack.pop();
                 const result = func(argument);
                 this.stack.push(result);
@@ -151,8 +147,8 @@ class HBVM {
         if (this.stack.length < this.base) {
             throw "STACK IS EMPTY";
         }
-        // console.debug("after:", [...this.stack], this.base);
-        // console.groupEnd();
+        console.debug(...this.stack);
+        console.groupEnd();
     }
 }
-window["interpret"] = interpret;
+globalThis["interpret"] = interpret;

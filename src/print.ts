@@ -17,51 +17,66 @@ export function print(inst: AST, n = 0) {
       return indent("RST", n);
     }
     case "RST_VAR": {
-      return indent(`RST_VAR ${inst.path}`, n);
+      return indent(`RST_VAR ${inst.path.join("/")}`, n);
     }
     case "LOAD_VAR": {
-      return indent(`LOAD_VAR ${inst.path}`, n);
+      return indent(`LOAD_VAR ${inst.path.join("/")}`, n);
     }
     case "STORE_VAR": {
-      return indent(`STORE_VAR ${inst.path}`, n);
+      return indent(`STORE_VAR ${inst.path.join("/")}`, n);
     }
     case "EVAL_EXPR": {
       return indent(`EVAL_EXPR ${inst.value}`, n);
     }
     case "LOAD_CONST": {
-      return `LOAD_CONST ${inst.value}`;
+      return indent(`LOAD_CONST ${inst.value}`, n);
     }
     case "NODE": {
-      return `NODE ${inst.tag}`;
+      return indent(`NODE ${inst.tag}`, n);
     }
     case "SET_PROP": {
-      return `SET_PROP ${inst.name} ${inst.path || inst.literal}`;
+      return indent(
+        `SET_PROP ${inst.name} ${inst.literal || inst.path.join("/")}`,
+        n
+      );
     }
     case "BLOCK": {
-      return `BLOCK_START\n${printAll(inst.body, 2)}\nBLOCK_END`;
+      return (
+        indent("BLOCK_START", n) +
+        "\n" +
+        printAll(inst.body, n + 2) +
+        "\n" +
+        indent("BLOCK_END", n)
+      );
     }
     case "COND": {
-      let res = "IF_TRUE";
+      let res = indent("IF_TRUE", n);
       if (inst.consequent.length) {
-        res += "\n" + printAll(inst.consequent, 2);
+        res += "\n" + printAll(inst.consequent, n + 2);
       }
       if (inst.alternate.length) {
-        res += "\n" + printAll(inst.alternate, 2);
+        res += "\n" + printAll(inst.alternate, n + 2);
       }
-      res += "\nEND_IF";
+      res += "\n" + indent("END_IF", n);
       return res;
     }
     case "DEFN_MSG": {
-      return `DEFN_MSG ${inst.name}\n${printAll(inst.body, 2)}\nDEFN_END`;
+      return (
+        indent(`DEFN_MSG ${inst.name}`, n) +
+        "\n" +
+        printAll(inst.body, n + 2) +
+        "\n" +
+        indent("DEFN_END", n)
+      );
     }
     case "SEND_MSG": {
-      return `SEND_MSG ${inst.receiver} ${inst.method}`;
+      return indent(`SEND_MSG ${inst.receiver.join("/")} ${inst.method}`, n);
     }
     case "APPLY_FUNC": {
-      return `APPLY_FUNC ${inst.func}`;
+      return indent(`APPLY_FUNC ${inst.func}`, n);
     }
     case "APPLY_OP": {
-      return `APPLY_OP ${inst.op}`;
+      return indent(`APPLY_OP ${inst.op}`, n);
     }
     default:
       return "";
