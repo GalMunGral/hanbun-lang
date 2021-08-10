@@ -84,7 +84,7 @@ class HBVM {
         this.cursor.append(node);
         break;
       }
-      case "SET_PROP": {
+      case "SET": {
         const receiver = last(this.stack);
         const value = inst.path ? this.get(inst.path, context) : inst.literal;
         receiver[inst.name] = value;
@@ -107,7 +107,7 @@ class HBVM {
         this.stack.push(result);
         break;
       }
-      case "DEFN_MSG": {
+      case "HANDLE": {
         const receiver = last(this.stack);
         const thisVM = this;
         const fn = function (argument: any) {

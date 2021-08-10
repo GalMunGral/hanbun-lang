@@ -186,7 +186,7 @@ const setProperty = fail
     pure(
       (name: string) =>
         (path: string[]): AST => ({
-          type: "SET_PROP",
+          type: "SET",
           name,
           path,
         })
@@ -205,7 +205,7 @@ const setProperty = fail
     pure(
       (name: string) =>
         (literal: string): AST => ({
-          type: "SET_PROP",
+          type: "SET",
           name,
           literal,
         })
@@ -223,7 +223,7 @@ const setProperty = fail
     pure(
       (name: string) =>
         (literal: string): AST => ({
-          type: "SET_PROP",
+          type: "SET",
           name,
           literal,
         })
@@ -238,7 +238,7 @@ const defineMethod = fail.or(() =>
   pure(
     (name: string) =>
       (body: any[]): AST => ({
-        type: "DEFN_MSG",
+        type: "HANDLE",
         name,
         body,
       })

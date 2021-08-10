@@ -30,13 +30,13 @@ export type AST =
       tag: string;
     }
   | {
-      type: "SET_PROP";
+      type: "SET";
       name: string;
       literal?: string;
       path?: string[];
     }
   | {
-      type: "DEFN_MSG";
+      type: "HANDLE";
       name: string;
       body: AST[];
     }

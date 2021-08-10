@@ -34,9 +34,9 @@ export function print(inst: AST, n = 0) {
     case "NODE": {
       return indent(`NODE ${inst.tag}`, n);
     }
-    case "SET_PROP": {
+    case "SET": {
       return indent(
-        `SET_PROP ${inst.name} ${inst.literal || inst.path.join("/")}`,
+        `SET ${inst.name} ${inst.literal || inst.path.join("/")}`,
         n
       );
     }
@@ -61,13 +61,13 @@ export function print(inst: AST, n = 0) {
       res += "\n" + indent("END_IF", n);
       return res;
     }
-    case "DEFN_MSG": {
+    case "HANDLE": {
       return (
-        indent(`DEFN_MSG ${inst.name}`, n) +
+        indent(`HANDLE ${inst.name}`, n) +
         "\n" +
         printAll(inst.body, n + 2) +
         "\n" +
-        indent("DEFN_END", n)
+        indent("END", n)
       );
     }
     case "SEND_MSG": {

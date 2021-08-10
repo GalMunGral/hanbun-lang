@@ -19,7 +19,7 @@ The code above is equivalent to:
 
 ```
 RST_VAR globalThis
-DEFN_MSG factorial
+HANDLE factorial
   STORE_VAR 數
   LOAD_CONST 2
   APPLY_OP <
@@ -33,7 +33,7 @@ DEFN_MSG factorial
     APPLY_FUNC factorial
     APPLY_OP *
   END_IF
-DEFN_END
+END
 ```
 
 ## I. Instruction Set and Grammar
@@ -55,11 +55,11 @@ DEFN_END
 | `APPLY_FUNC` (func)            | `請君` `QUOTE` `之` `。`                                                         |
 | `STORE_VAR` (path)             | `是為` `PATH` `。` <br> `或曰` `PATH` `。`<br> [ `彼` ] `PATH` `當如是` `。`     |
 | `SET_CURSOR`                   | `內`                                                                             |
-| `SET_PROP` (name, path)        | `其` `QUOTE` `者` `。` `ws` `彼` `PATH` `也` `。`                                |
-| `SET_PROP` (name, literal)     | `其` `QUOTE` `者` `。` `ws` `QUOTE` `也` `。` <br> [ `其` ] `QUOTE` `QUOTE` `。` |
+| `SET` (name, path)             | `其` `QUOTE` `者` `。` `ws` `彼` `PATH` `也` `。`                                |
+| `SET` (name, literal)          | `其` `QUOTE` `者` `。` `ws` `QUOTE` `也` `。` <br> [ `其` ] `QUOTE` `QUOTE` `。` |
 | `BLOCK` (body)                 | `曰` `「` `INSTRUCTION` { `ws` `INSTRUCTION` } `」`                              |
 | `COND` (consequent, alternate) | [ `然` `。` `BLOCK` ] [ `不然` `。` `BLOCK` ]                                    |
-| `DEFN_MSG` (name, body)        | `聞` `QUOTE` `而` `BLOCK`                                                        |
+| `HANDLE` (name, body)          | `聞` `QUOTE` `而` `BLOCK`                                                        |
 | `SEND_MSG` (target, msg)       | `望` [ `彼` ] `PATH` `QUOTE` `之` `。` <br> `吾欲` `QUOTE` `之` `。`             |
 
 ## II. A More Elaborate Example
@@ -164,56 +164,56 @@ or, equivalently
 ```
 EVAL_EXPR Object.create(null)
 STORE_VAR logger
-SET_PROP alert window/alert
+SET alert window/alert
 RST_VAR logger
-DEFN_MSG log
+HANDLE log
   SEND_MSG console debug
   LOAD_VAR 紀錄
-DEFN_END
-DEFN_MSG notify
+END
+HANDLE notify
   STORE_VAR 紀錄
   SEND_MSG this log
   LOAD_CONST [文言lang-測試]
   LOAD_VAR 紀錄
   APPLY_OP +
   SEND_MSG window alert
-DEFN_END
+END
 RST_VAR document/body
 SET CURSOR
 NODE div
 STORE_VAR 容器
 SET CURSOR
 NODE div
-SET_PROP padding 10px
-SET_PROP display flow-root
-SET_PROP background-color pink
-SET_PROP font-weight bold
+SET padding 10px
+SET display flow-root
+SET background-color pink
+SET font-weight bold
 SET CURSOR
 NODE label
-SET_PROP textContent 重複次數
+SET textContent 重複次數
 NODE input
 STORE_VAR 數字輸入框
-SET_PROP display block
+SET display block
 NODE button
 STORE_VAR 按鍵
-SET_PROP textContent 更新
+SET textContent 更新
 NODE label
-SET_PROP textContent 輸入
+SET textContent 輸入
 NODE input
 STORE_VAR 文本框
-SET_PROP display block
+SET display block
 RST_VAR 容器
 SET CURSOR
 NODE pre
 STORE_VAR 顯示框
-SET_PROP background-color lightgray
-SET_PROP padding 20px
-SET_PROP white-space normal
-SET_PROP word-break break-all
+SET background-color lightgray
+SET padding 20px
+SET white-space normal
+SET word-break break-all
 RST_VAR 按鍵
-SET_PROP display block
-SET_PROP margin 10px
-DEFN_MSG click
+SET display block
+SET margin 10px
+HANDLE click
   RST_VAR INITIALIZED
   IF_TRUE
   ELSE
@@ -223,8 +223,8 @@ DEFN_MSG click
   IF_TRUE
     SEND_MSG this randomize
   END_IF
-DEFN_END
-DEFN_MSG init
+END
+HANDLE init
   LOAD_CONST 請輸入您的姓名
   SEND_MSG window prompt
   STORE_VAR 姓名
@@ -234,20 +234,20 @@ DEFN_MSG init
     APPLY_OP +
     SEND_MSG window alert
     RST_VAR 文本框
-    SET_PROP background-color #ffaaaa
-    SET_PROP color white
-    DEFN_MSG input
+    SET background-color #ffaaaa
+    SET color white
+    HANDLE input
       RST_VAR 次數
       SEND_MSG this/value repeat
       STORE_VAR 顯示框/textContent
-    DEFN_END
+    END
     LOAD_CONST 1
     STORE_VAR INITIALIZED
   ELSE
     LOAD_CONST 0
   END_IF
-DEFN_END
-DEFN_MSG randomize
+END
+HANDLE randomize
   RST_VAR 數字輸入框/value
   APPLY_FUNC parseInt
   STORE_VAR 次數
@@ -275,5 +275,5 @@ DEFN_MSG randomize
   RST_VAR 次數
   SEND_MSG 文本框/value repeat
   STORE_VAR 顯示框/textContent
-DEFN_END
+END
 ```
