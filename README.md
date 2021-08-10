@@ -1,6 +1,6 @@
 # Hanbun (漢文, 한문, かんぶん)
 
-A object-oriented, stack-based VM (think JVM or .NET CLR) for UI Programming
+A object-oriented, stack-based VM for UI Programming.
 
 ```
 夫「globalThis」。
@@ -14,6 +14,8 @@ A object-oriented, stack-based VM (think JVM or .NET CLR) for UI Programming
     」
 」
 ```
+
+(For a more elaborate example, see: https://github.com/GalMunGral/hanbun-lang/blob/master/dist/index.html)
 
 ## Instruction Set and Context-Free Grammar
 
