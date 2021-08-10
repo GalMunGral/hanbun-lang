@@ -15,6 +15,27 @@ A object-oriented, stack-based VM for UI Programming.
 」
 ```
 
+The code above is equivalent to:
+
+```
+RST_VAR globalThis
+DEFN_MSG factorial
+  STORE_VAR 數
+  LOAD_CONST 2
+  APPLY_OP <
+  IF_TRUE
+    LOAD_VAR 數
+  ELSE
+    LOAD_VAR 數
+    LOAD_VAR 數
+    LOAD_CONST 1
+    APPLY_OP -
+    APPLY_FUNC factorial
+    APPLY_OP *
+  END_IF
+DEFN_END
+```
+
 (For a more elaborate example, see: https://github.com/GalMunGral/hanbun-lang/blob/master/dist/index.html)
 
 ## Instruction Set and Context-Free Grammar

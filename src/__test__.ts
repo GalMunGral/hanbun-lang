@@ -1,6 +1,7 @@
-import { interpret } from "./index.js";
+import { program } from "./parser.js";
+import { printAll } from "./print.js";
 
-interpret(`
+program.map(printAll).tap(console.log).parse(`
   夫「globalThis」。
   聞「factorial」而曰「
       是為「數」。有數曰「2」。請「<」之。

@@ -55,7 +55,8 @@ export function print(inst: AST, n = 0) {
         res += "\n" + printAll(inst.consequent, n + 2);
       }
       if (inst.alternate.length) {
-        res += "\n" + printAll(inst.alternate, n + 2);
+        res +=
+          "\n" + indent("ELSE", n) + "\n" + printAll(inst.alternate, n + 2);
       }
       res += "\n" + indent("END_IF", n);
       return res;
