@@ -1,6 +1,6 @@
 # Hanbun (漢文, 한문, かんぶん)
 
-A object-oriented, stack-based VM for UI Programming.
+An object-oriented, stack-based VM for UI Programming.
 
 ```
 夫「globalThis」。
