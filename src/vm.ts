@@ -1,4 +1,5 @@
 import { parser } from "./index.js";
+import { print, printAll } from "./print.js";
 import { AST } from "./types.js";
 
 function last<T>(arr: T[]): T {
@@ -9,7 +10,12 @@ function last<T>(arr: T[]): T {
 }
 
 export function interpret(script: string) {
-  parser.map((program) => new HBVM().run(program)).parse(script);
+  parser
+    .map((program) => {
+      console.debug(printAll(program));
+      new HBVM().run(program);
+    })
+    .parse(script);
 }
 
 class HBVM {
@@ -41,8 +47,9 @@ class HBVM {
   }
 
   private execute(inst: AST, context?: any) {
-    console.group(...Object.values(inst));
-    console.debug("before:", [...this.stack], this.base);
+    console.debug(print(inst));
+    // console.group(...Object.values(inst));
+    // console.debug("before:", [...this.stack], this.base);
     switch (inst.type) {
       case "SET_CURSOR": {
         this.cursor = this.stack.pop();
@@ -154,8 +161,8 @@ class HBVM {
     if (this.stack.length < this.base) {
       throw "STACK IS EMPTY";
     }
-    console.debug("after:", [...this.stack], this.base);
-    console.groupEnd();
+    // console.debug("after:", [...this.stack], this.base);
+    // console.groupEnd();
   }
 }
 

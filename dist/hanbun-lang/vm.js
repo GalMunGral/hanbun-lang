@@ -1,4 +1,5 @@
 import { parser } from "./index.js";
+import { print, printAll } from "./print.js";
 function last(arr) {
     if (arr.length) {
         return arr[arr.length - 1];
@@ -6,7 +7,12 @@ function last(arr) {
     return null;
 }
 export function interpret(script) {
-    parser.map((program) => new HBVM().run(program)).parse(script);
+    parser
+        .map((program) => {
+        console.debug(printAll(program));
+        new HBVM().run(program);
+    })
+        .parse(script);
 }
 class HBVM {
     stack = [];
@@ -34,8 +40,9 @@ class HBVM {
         return result;
     }
     execute(inst, context) {
-        console.group(...Object.values(inst));
-        console.debug("before:", [...this.stack], this.base);
+        console.debug(print(inst));
+        // console.group(...Object.values(inst));
+        // console.debug("before:", [...this.stack], this.base);
         switch (inst.type) {
             case "SET_CURSOR": {
                 this.cursor = this.stack.pop();
@@ -144,8 +151,8 @@ class HBVM {
         if (this.stack.length < this.base) {
             throw "STACK IS EMPTY";
         }
-        console.debug("after:", [...this.stack], this.base);
-        console.groupEnd();
+        // console.debug("after:", [...this.stack], this.base);
+        // console.groupEnd();
     }
 }
 window["interpret"] = interpret;
