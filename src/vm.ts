@@ -51,14 +51,13 @@ class HBVM {
         break;
       }
       case "RST": {
-        // this.stack.length = this.base;
         this.stack = this.stack.slice(0, this.base);
         this.cursor = HBVM.root;
         break;
       }
       case "RST_VAR": {
-        this.stack = [];
         this.cursor = HBVM.root;
+        this.stack = this.stack.slice(0, this.base);
         this.stack.push(this.get(inst.path, context));
         break;
       }
@@ -99,11 +98,13 @@ class HBVM {
         break;
       }
       case "COND": {
-        const test = this.stack.pop();
+        // const test = this.stack.pop();
+        const test = last(this.stack);
         const result = this.run(
           test ? inst.consequent : inst.alternate,
           context
         );
+        this.stack.pop();
         this.stack.push(result);
         break;
       }

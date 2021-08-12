@@ -13,7 +13,7 @@ const r = (r: RegExp) =>
 
 const ws = r(/\s*/);
 const period = r(/。/);
-const quoted = r(/「.+?」/).map((r) => r.slice(1, -1));
+const quoted = r(/(「|『).+?(」|』)/).map((r) => r.slice(1, -1));
 const self = r(/吾/).map(() => "this");
 const attrPath = r(/之/).apr(quoted).sep(ws);
 const variablePath = fail.or(() =>
@@ -29,11 +29,11 @@ const block = fail.or(() =>
       body,
     })
   )
-    .apl(r(/曰「/))
+    .apl(r(/曰(「|『)/))
     .apl(ws)
     .ap(instruction.sep(ws))
     .apl(ws)
-    .apl(r(/」/))
+    .apl(r(/(」|』)/))
 );
 
 const conditional = fail
@@ -62,7 +62,7 @@ const conditional = fail
         alternate,
       })
     )
-      .apl(r(/不然。/))
+      .apl(r(/不然。?/))
       .apl(ws)
       .ap(block.map((b) => b.body))
   )
@@ -74,7 +74,7 @@ const conditional = fail
         alternate: [],
       })
     )
-      .apl(r(/然。/))
+      .apl(r(/然。?/))
       .apl(ws)
       .ap(block.map((b) => b.body))
   );
@@ -163,7 +163,7 @@ const evalExpression = fail.or(() =>
       value,
     })
   )
-    .apl(r(/言/))
+    .apl(r(/誦/))
     .ap(quoted)
     .apl(r(/而生一物/))
     .apl(period)
@@ -262,7 +262,7 @@ const applyMethod = fail
       .apl(r(/望/))
       .ap(variablePath)
       .ap(quoted)
-      .apl(r(/之/))
+      .apl(r(/之?/))
       .apl(period)
   )
   .or(() =>
@@ -275,7 +275,7 @@ const applyMethod = fail
     )
       .apl(r(/吾欲/))
       .ap(quoted)
-      .apl(r(/之/))
+      .apl(r(/之?/))
       .apl(period)
   );
 
@@ -289,7 +289,7 @@ const applyFunction = fail.or(() =>
     .apl(r(/請君/))
     .apl(ws)
     .ap(quoted)
-    .apl(r(/之/))
+    .apl(r(/之?/))
     .apl(period)
 );
 
@@ -304,7 +304,7 @@ const applyOperator = fail.or(() =>
     .apl(ws)
     .ap(quoted)
     .apl(ws)
-    .apl(r(/之/))
+    .apl(r(/之?/))
     .apl(period)
 );
 

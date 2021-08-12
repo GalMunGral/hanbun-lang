@@ -51,8 +51,8 @@ END
 | `LOAD_CONST` (literal)         | `有數曰` `QUOTE` `。` <br> `有文曰` `QUOTE` `。`                                 |
 | `NODE` (type)                  | `有` `QUOTE` `。`                                                                |
 | `EVAL_EXPR` (expr)             | `言` `QUOTE` ` 而生一物` `。`                                                    |
-| `APPLY_OP` (op)                | `請` `QUOTE` `之` `。`                                                           |
-| `APPLY_FUNC` (func)            | `請君` `QUOTE` `之` `。`                                                         |
+| `APPLY_OP` (op)                | `請` `QUOTE` [`之`] `。`                                                         |
+| `APPLY_FUNC` (func)            | `請君` `QUOTE` [`之`] `。`                                                       |
 | `STORE_VAR` (path)             | `是為` `PATH` `。` <br> `或曰` `PATH` `。`<br> [ `彼` ] `PATH` `當如是` `。`     |
 | `SET_CURSOR`                   | `內`                                                                             |
 | `SET` (name, path)             | `其` `QUOTE` `者` `。` `ws` `彼` `PATH` `也` `。`                                |
@@ -60,12 +60,12 @@ END
 | `BLOCK` (body)                 | `曰` `「` `INSTRUCTION` { `ws` `INSTRUCTION` } `」`                              |
 | `COND` (consequent, alternate) | [ `然` `。` `BLOCK` ] [ `不然` `。` `BLOCK` ]                                    |
 | `HANDLE` (name, body)          | `聞` `QUOTE` `而` `BLOCK`                                                        |
-| `SEND_MSG` (target, msg)       | `望` [ `彼` ] `PATH` `QUOTE` `之` `。` <br> `吾欲` `QUOTE` `之` `。`             |
+| `SEND_MSG` (target, msg)       | `望` [ `彼` ] `PATH` `QUOTE` [`之`] `。` <br> `吾欲` `QUOTE` [`之`] `。`         |
 
 ## II. A More Elaborate Example
 
 ```
-言「Object.create(null)」而生一物。是為「logger」。
+誦「Object.create(null)」而生一物。是為「logger」。
 其「alert」者。彼「window」之「alert」也。
 
 夫「logger」。
@@ -141,7 +141,7 @@ END
                 然。曰「有數曰「0」。彼「次數」當如是。」
 
         夫「次數」。彼「原次數」當如是。
-            言「Math.random()」而生一物。請「*」之。
+            誦「Math.random()」而生一物。請「*」之。
             望「Math」「floor」之。
             彼「次數」當如是。
 

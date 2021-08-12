@@ -15,7 +15,7 @@ import { printAll } from "./print.js";
 // `);
 
 program.map(printAll).tap(console.log).parse(`
-    言「Object.create(null)」而生一物。是為「logger」。
+    誦「Object.create(null)」而生一物。是為「logger」。
     其「alert」者。彼「window」之「alert」也。
 
     夫「logger」。
@@ -91,7 +91,7 @@ program.map(printAll).tap(console.log).parse(`
                     然。曰「有數曰「0」。彼「次數」當如是。」
 
             夫「次數」。彼「原次數」當如是。
-                言「Math.random()」而生一物。請「*」之。
+                誦「Math.random()」而生一物。請「*」之。
                 望「Math」「floor」之。
                 彼「次數」當如是。
 
