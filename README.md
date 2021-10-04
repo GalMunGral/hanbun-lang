@@ -17,23 +17,20 @@ An object-oriented, stack-based VM for UI Programming.
 
 The code above is equivalent to:
 
-```
-RST_VAR globalThis
-HANDLE factorial
-  STORE_VAR 數
-  LOAD_CONST 2
-  APPLY_OP <
-  IF_TRUE
-    LOAD_VAR 數
-  ELSE
-    LOAD_VAR 數
-    LOAD_VAR 數
-    LOAD_CONST 1
-    APPLY_OP -
-    APPLY_FUNC factorial
-    APPLY_OP *
-  END_IF
-END
+```lisp
+(RST_VAR "globalThis")
+(HANDLE "factorial"
+  ((STORE_VAR ("數"))
+    (LOAD_CONST 2)
+    (APPLY_OP "<")
+    (COND
+      ((LOAD_VAR ("數")))
+      ((LOAD_VAR ("數"))
+        (LOAD_VAR ("數"))
+        (LOAD_CONST 1)
+        (APPLY_OP "-")
+        (APPLY_FUNC "factorial")
+        (APPLY_OP "*"))))
 ```
 
 ## I. Instruction Set and Grammar
@@ -161,119 +158,126 @@ END
 
 or, equivalently
 
-```
-EVAL_EXPR Object.create(null)
-STORE_VAR logger
-SET alert window/alert
-RST_VAR logger
-HANDLE log
-  SEND_MSG console debug
-  LOAD_VAR 紀錄
-END
-HANDLE notify
-  STORE_VAR 紀錄
-  SEND_MSG this log
-  LOAD_CONST [文言lang-測試]
-  LOAD_VAR 紀錄
-  APPLY_OP +
-  SEND_MSG window alert
-END
-RST_VAR document/body
-SET CURSOR
-NODE div
-STORE_VAR 容器
-SET CURSOR
-NODE div
-SET padding 10px
-SET display flow-root
-SET background-color pink
-SET font-weight bold
-SET CURSOR
-NODE label
-SET textContent 重複次數
-NODE input
-STORE_VAR 數字輸入框
-SET display block
-NODE button
-STORE_VAR 按鍵
-SET textContent 更新
-NODE label
-SET textContent 輸入
-NODE input
-STORE_VAR 文本框
-SET display block
-RST_VAR 容器
-SET CURSOR
-NODE pre
-STORE_VAR 顯示框
-SET background-color lightgray
-SET padding 20px
-SET white-space normal
-SET word-break break-all
-RST_VAR 按鍵
-SET display block
-SET margin 10px
-HANDLE click
-  RST_VAR INITIALIZED
-  IF_TRUE
-  ELSE
-    SEND_MSG this init
-  END_IF
-  RST_VAR INITIALIZED
-  IF_TRUE
-    SEND_MSG this randomize
-  END_IF
-END
-HANDLE init
-  LOAD_CONST 請輸入您的姓名
-  SEND_MSG window prompt
-  STORE_VAR 姓名
-  IF_TRUE
-    LOAD_CONST 您好
-    LOAD_VAR 姓名
-    APPLY_OP +
-    SEND_MSG window alert
-    RST_VAR 文本框
-    SET background-color #ffaaaa
-    SET color white
-    HANDLE input
-      RST_VAR 次數
-      SEND_MSG this/value repeat
-      STORE_VAR 顯示框/textContent
-    END
-    LOAD_CONST 1
-    STORE_VAR INITIALIZED
-  ELSE
-    LOAD_CONST 0
-  END_IF
-END
-HANDLE randomize
-  RST_VAR 數字輸入框/value
-  APPLY_FUNC parseInt
-  STORE_VAR 次數
-  APPLY_FUNC isNaN
-  IF_TRUE
-    LOAD_CONST 0
-    STORE_VAR 次數
-  END_IF
-  RST_VAR 次數
-  STORE_VAR 原次數
-  EVAL_EXPR Math.random()
-  APPLY_OP *
-  SEND_MSG Math floor
-  STORE_VAR 次數
-  LOAD_CONST 當前重複次數為
-  LOAD_VAR 次數
-  APPLY_OP +
-  STORE_VAR document/title
-  LOAD_VAR 原次數
-  LOAD_CONST  x 隨機數(0-1) =
-  LOAD_VAR 次數
-  APPLY_OP +
-  APPLY_OP +
-  SEND_MSG logger notify
-  RST_VAR 次數
-  SEND_MSG 文本框/value repeat
-  STORE_VAR 顯示框/textContent
-END
+```lisp
+(EVAL_EXPR "Object.create(null)")
+(STORE_VAR ("logger"))
+(SETP_VAR "alert" ("window" "alert"))
+
+(RST_VAR "logger")
+
+(HANDLE "log"
+  ((SEND_MSG ("console") "debug")
+    (LOAD_VAR ("紀錄"))))
+
+(HANDLE "notify"
+  ((STORE_VAR ("紀錄"))
+    (SEND_MSG "this" "log")
+    (LOAD_CONST "[文言lang-測試]")
+    (LOAD_VAR ("紀錄"))
+    (APPLY_OP "+")
+    (SEND_MSG ("window") "alert")))
+
+(RST_VAR ("document" "body"))
+(SET_CURSOR)
+
+(NODE "div")
+(STORE_VAR ("容器"))
+(SET_CURSOR)
+
+(NODE "div")
+(SETP_VAL "padding" "10px")
+(SETP_VAL "display" "flow-root")
+(SETP_VAL "background-color" "pink")
+(SETP_VAL "font-weight" "bold")
+(SET_CURSOR)
+
+(NODE "label")
+(SETP_VAL "textContent" "重複次數")
+
+(NODE "input")
+(STORE_VAR ("數字輸入框"))
+(SETP_VAL "display" "block")
+
+(NODE "button")
+(STORE_VAR ("按鍵"))
+(SETP_VAL "textContent" "更新")
+
+(NODE "label")
+(SETP_VAL "textContent" "輸入")
+
+(NODE "input")
+(STORE_VAR ("文本框")
+(SETP_VAL "display" "block")
+
+(RST_VAR ("容器"))
+(SET_CURSOR)
+
+(NODE "pre")
+(STORE_VAR ("顯示框"))
+(SETP_VAL "background-color" "lightgray")
+(SETP_VAL "padding" "20px")
+(SETP_VAL "white-space" "normal")
+(SETP_VAL "word-break" "break-all")
+
+(RST_VAR ("按鍵"))
+(SETP_VAL "display" "block")
+(SETP_VAL "margin" "10px")
+
+(HANDLE "click"
+  ((RST_VAR ("INITIALIZED"))
+    (COND () ((SEND_MSG ("this") "init")))
+    (RST_VAR ("INITIALIZED"))
+    (COND ((SEND_MSG ("this") "randomize")) ())))
+
+(HANDLE "init"
+  ((LOAD_CONST "請輸入您的姓名")
+    (SEND_MSG ("window") "prompt")
+    (STORE_VAR ("姓名"))
+    (COND
+      ((LOAD_CONST "您好")
+        (LOAD_VAR ("姓名"))
+        (APPLY_OP "+")
+        (SEND_MSG ("window") "alert")
+
+        (RST_VAR ("文本框"))
+        (SETP_VAL "background-color" "#ffaaaa")
+        (SETP_VAL "color" "white")
+
+        (HANDLE "input"
+          ((RST_VAR ("次數"))
+            (SEND_MSG ("this" "value") "repeat")
+            (STORE_VAR ("顯示框" "textContent"))))
+
+        (LOAD_CONST 1)
+        (STORE_VAR ("INITIALIZED")))
+      ((LOAD_CONST 0)))))
+
+(HANDLE "randomize"
+  ((RST_VAR ("數字輸入框" "value"))
+    (APPLY_FUNC "parseInt")
+    (STORE_VAR ("次數"))
+    (APPLY_FUNC "isNaN")
+    (COND
+      ((LOAD_CONST 0)
+        (STORE_VAR ("次數")))
+      ())
+    (RST_VAR ("次數"))
+    (STORE_VAR ("原次數"))
+    (EVAL_EXPR "Math.random()")
+    (APPLY_OP "*")
+    (SEND_MSG ("Math") "floor")
+    (STORE_VAR ("次數"))
+    (LOAD_CONST "當前重複次數為")
+    (LOAD_VAR ("次數"))
+    (APPLY_OP "+")
+    (STORE_VAR ("document" "title"))
+    (LOAD_VAR "原次數")
+    (LOAD_CONST " x 隨機數(0-1) =")
+    (LOAD_VAR ("次數"))
+    (APPLY_OP "+")
+    (APPLY_OP "+")
+    (SEND_MSG ("logger") "notify")
+    (RST_VAR ("次數"))
+    (SEND_MSG ("文本框" "value") "repeat")
+    (STORE_VAR ("顯示框" "textContent"))))
 ```
