@@ -36,6 +36,9 @@ export class ErrorT<E, M> {
         return {
           data: new ErrorT(
             this.data.run.bind((v) => {
+              if (v.err) {
+                console.log(v.err);
+              }
               return v.err ? m.unit(v) : f(v.ok).data.run;
             })
           ),

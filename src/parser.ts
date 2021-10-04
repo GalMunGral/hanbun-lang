@@ -1,5 +1,21 @@
-import { Ok, Err, Parser, fail, pure } from "./lib.js";
-import { AST } from "./types.js";
+import { Ok, Err, Parser, fail, pure } from "./fp-helpers/Parser.js";
+import {
+  APPLY_FUNC,
+  APPLY_OP,
+  COND,
+  EVAL,
+  HANDLE,
+  LOAD_CONST,
+  LOAD_VAR,
+  NODE,
+  RST_VAR,
+  SEND_MSG,
+  SETP_VAL,
+  SETP_VAR,
+  SET_CURSOR,
+  STORE_VAR,
+} from "./Runtime.js";
+import { NOOP, VM } from "./VM.js";
 
 const r = (r: RegExp) =>
   new Parser<string, string>((s) => {
@@ -14,7 +30,7 @@ const r = (r: RegExp) =>
 const ws = r(/\s*/);
 const period = r(/。/);
 const quoted = r(/(「|『).+?(」|』)/).map((r) => r.slice(1, -1));
-const self = r(/吾/).map(() => "this");
+const self = r(/吾/).map(() => "__self__");
 const attrPath = r(/之/).apr(quoted).sep(ws);
 const variablePath = fail.or(() =>
   pure((root: any) => (path: string[]) => [root, ...path])
@@ -22,13 +38,12 @@ const variablePath = fail.or(() =>
     .ap(attrPath)
 );
 
-const block = fail.or(() =>
-  pure(
-    (body: any[]): AST => ({
-      type: "BLOCK",
-      body,
-    })
-  )
+function sequence(actions: VM<any>[]): VM<any> {
+  return actions.reduce((prev, cur) => prev.bind(() => cur));
+}
+
+const block: Parser<VM<void>, any> = fail.or(() =>
+  pure(sequence)
     .apl(r(/曰(「|『)/))
     .apl(ws)
     .ap(instruction.sep(ws))
@@ -36,161 +51,87 @@ const block = fail.or(() =>
     .apl(r(/(」|』)/))
 );
 
-const conditional = fail
+const conditional: Parser<VM<void>, any> = fail
   .or(() =>
-    pure(
-      (consequent: AST[]) =>
-        (alternate: AST[]): AST => ({
-          type: "COND",
-          consequent,
-          alternate,
-        })
-    )
+    pure(COND)
       .apl(r(/然。/))
       .apl(ws)
-      .ap(block.map((b) => b.body))
+      .ap(block)
       .apl(ws)
       .apl(r(/不然。/))
       .apl(ws)
-      .ap(block.map((b) => b.body))
+      .ap(block)
   )
   .or(() =>
-    pure(
-      (alternate: AST[]): AST => ({
-        type: "COND",
-        consequent: [],
-        alternate,
-      })
-    )
+    pure((alt: VM<void>) => COND(NOOP)(alt))
       .apl(r(/不然。?/))
       .apl(ws)
-      .ap(block.map((b) => b.body))
+      .ap(block)
   )
   .or(() =>
-    pure(
-      (consequent: AST[]): AST => ({
-        type: "COND",
-        consequent,
-        alternate: [],
-      })
-    )
+    pure((cons: VM<void>) => COND(cons)(NOOP))
       .apl(r(/然。?/))
       .apl(ws)
-      .ap(block.map((b) => b.body))
+      .ap(block)
   );
 
-const setCursor = pure<AST>({
-  type: "SET_CURSOR",
-}).apl(r(/内/));
+const setCursor: Parser<VM<void>, any> = pure(SET_CURSOR).apl(r(/内/));
 
-const loadVar = fail.or(() =>
-  pure(
-    (path: string[]): AST => ({
-      type: "LOAD_VAR",
-      path,
-    })
-  )
+const loadVar: Parser<VM<void>, any> = fail.or(() =>
+  pure(LOAD_VAR)
     .apl(r(/吾?有彼?/))
     .ap(variablePath)
     .apl(period)
 );
 
-const resetAndloadVar = fail.or(() =>
-  pure(
-    (path: string[]): AST => ({
-      type: "RST_VAR",
-      path,
-    })
-  )
-    .apl(r(/夫/))
-    .ap(variablePath)
-    .apl(period)
+const resetAndloadVar: Parser<VM<void>, any> = fail.or(() =>
+  pure(RST_VAR).apl(r(/夫/)).ap(variablePath).apl(period)
 );
 
-const loadConst = fail
+const loadConst: Parser<VM<void>, any> = fail
   .or(() =>
-    pure(
-      (value: string): AST => ({
-        type: "LOAD_CONST",
-        value,
-      })
-    )
+    pure(LOAD_CONST)
       .apl(r(/有數曰/))
       .ap(quoted.map(Number))
       .apl(period)
   )
   .or(() =>
-    pure(
-      (value: string): AST => ({
-        type: "LOAD_CONST",
-        value,
-      })
-    )
+    pure(LOAD_CONST)
       .apl(r(/有言曰/))
       .ap(quoted)
       .apl(period)
   );
 
-const storeVar = fail
-  .or(() =>
-    pure(
-      (path: string[]): AST => ({
-        type: "STORE_VAR",
-        path,
-      })
-    )
-      .apl(r(/彼?/))
-      .ap(variablePath)
-      .apl(r(/當如是/))
-      .apl(period)
-  )
-  .or(() =>
-    pure(
-      (path: string[]): AST => ({
-        type: "STORE_VAR",
-        path,
-      })
-    )
-      .apl(r(/是為|或曰/))
-      .ap(variablePath)
-      .apl(period)
-  );
-
 const evalExpression = fail.or(() =>
-  pure(
-    (value: string): AST => ({
-      type: "EVAL_EXPR",
-      value,
-    })
-  )
+  pure(EVAL)
     .apl(r(/誦/))
     .ap(quoted)
     .apl(r(/而生一物/))
     .apl(period)
 );
 
-const domNode = fail.or(() =>
-  pure(
-    (tag: string): AST => ({
-      type: "NODE",
-      tag,
-    })
+const storeVar: Parser<VM<void>, any> = fail
+  .or(() =>
+    pure(STORE_VAR)
+      .apl(r(/彼?/))
+      .ap(variablePath)
+      .apl(r(/當如是/))
+      .apl(period)
   )
-    .apl(r(/有/))
-    .ap(quoted)
-    .apl(period)
+  .or(() =>
+    pure(STORE_VAR)
+      .apl(r(/是為|或曰/))
+      .ap(variablePath)
+      .apl(period)
+  );
+
+const domNode: Parser<VM<void>, any> = fail.or(() =>
+  pure(NODE).apl(r(/有/)).ap(quoted).apl(period)
 );
 
-const setProperty = fail
+const setProperty: Parser<VM<void>, any> = fail
   .or(() =>
-    pure(
-      (name: string) =>
-        (path: string[]): AST => ({
-          type: "SET",
-          name,
-          path,
-        })
-    )
+    pure(SETP_VAR)
       .apl(r(/其/))
       .ap(quoted)
       .apl(r(/者/))
@@ -202,14 +143,7 @@ const setProperty = fail
       .apl(period)
   )
   .or(() =>
-    pure(
-      (name: string) =>
-        (literal: string): AST => ({
-          type: "SET",
-          name,
-          literal,
-        })
-    )
+    pure(SETP_VAL)
       .apl(r(/其/))
       .ap(quoted)
       .apl(r(/者/))
@@ -219,46 +153,15 @@ const setProperty = fail
       .apl(r(/也/))
       .apl(period)
   )
-  .or(() =>
-    pure(
-      (name: string) =>
-        (literal: string): AST => ({
-          type: "SET",
-          name,
-          literal,
-        })
-    )
-      .apl(r(/其?/))
-      .ap(quoted)
-      .ap(quoted)
-      .apl(period)
-  );
+  .or(() => pure(SETP_VAL).apl(r(/其?/)).ap(quoted).ap(quoted).apl(period));
 
-const defineMethod = fail.or(() =>
-  pure(
-    (name: string) =>
-      (body: any[]): AST => ({
-        type: "HANDLE",
-        name,
-        body,
-      })
-  )
-    .apl(r(/聞/))
-    .ap(quoted)
-    .apl(r(/而/))
-    .ap(block.map((b) => b.body))
+const defineMethod: Parser<VM<void>, any> = fail.or(() =>
+  pure(HANDLE).apl(r(/聞/)).ap(quoted).apl(r(/而/)).ap(block)
 );
 
-const applyMethod = fail
+const applyMethod: Parser<VM<void>, any> = fail
   .or(() =>
-    pure(
-      (receiver: string[]) =>
-        (method: string): AST => ({
-          type: "SEND_MSG",
-          receiver,
-          method,
-        })
-    )
+    pure(SEND_MSG)
       .apl(r(/望/))
       .ap(variablePath)
       .ap(quoted)
@@ -266,40 +169,19 @@ const applyMethod = fail
       .apl(period)
   )
   .or(() =>
-    pure(
-      (method: string): AST => ({
-        type: "SEND_MSG",
-        receiver: ["this"],
-        method,
-      })
-    )
+    pure(SEND_MSG(["__self__"]))
       .apl(r(/吾欲/))
       .ap(quoted)
       .apl(r(/之?/))
       .apl(period)
   );
 
-const applyFunction = fail.or(() =>
-  pure(
-    (func: string): AST => ({
-      type: "APPLY_FUNC",
-      func,
-    })
-  )
-    .apl(r(/請君/))
-    .apl(ws)
-    .ap(quoted)
-    .apl(r(/之?/))
-    .apl(period)
+const applyFunction: Parser<VM<void>, any> = fail.or(() =>
+  pure(APPLY_FUNC).apl(r(/請君/)).apl(ws).ap(quoted).apl(r(/之?/)).apl(period)
 );
 
-const applyOperator = fail.or(() =>
-  pure(
-    (op: string): AST => ({
-      type: "APPLY_OP",
-      op,
-    })
-  )
+const applyOperator: Parser<VM<void>, any> = fail.or(() =>
+  pure(APPLY_OP)
     .apl(r(/請/))
     .apl(ws)
     .ap(quoted)
@@ -309,8 +191,8 @@ const applyOperator = fail.or(() =>
 );
 
 const instruction: Parser<any, string> = fail
-  .or(() => evalExpression)
   .or(() => domNode)
+  .or(() => evalExpression)
   .or(() => setProperty)
   .or(() => defineMethod)
   .or(() => applyMethod)
@@ -324,4 +206,7 @@ const instruction: Parser<any, string> = fail
   .or(() => resetAndloadVar)
   .or(() => setCursor);
 
-export const program = ws.apr(instruction.sep(ws)).apl(ws);
+export const program: Parser<VM<void>, any> = pure(sequence)
+  .apl(ws)
+  .ap(instruction.sep(ws))
+  .apl(ws);

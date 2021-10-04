@@ -1,165 +1,124 @@
-import { parser } from "./index.js";
-import { print, printAll } from "./print.js";
-import { AST } from "./types.js";
+import { Monad } from "./fp-helpers/types.js";
+import { Identity } from "./fp-helpers/Identity.js";
+import { ErrorT } from "./fp-helpers/Error.js";
+import { StateT } from "./fp-helpers/State.js";
 
-function last<T>(arr: T[]): T {
-  if (arr.length) {
-    return arr[arr.length - 1];
-  }
-  return null;
+export type Env = any;
+export type Stack = any[];
+export type VM<V> = Monad<
+  StateT<Stack, StateT<Env, ErrorT<string, Identity>>>,
+  V
+>;
+
+const Id = Identity.instance();
+export const ErrorM = ErrorT.trans<string, Identity, any>(Id);
+export const EnvErrorM = StateT.trans<Env, ErrorT<string, Identity>, any>(
+  ErrorM
+);
+export const StackEnvErrorM = StateT.trans<
+  Stack,
+  StateT<Env, ErrorT<string, Identity>>,
+  any
+>(EnvErrorM);
+
+export function liftErrorM<V>(m: Monad<ErrorT<string, Identity>, V>): VM<V> {
+  return StateT.lift<Stack, StateT<Env, ErrorT<string, Identity>>, V>(
+    StateT.lift<Env, ErrorT<string, Identity>, V>(m)
+  );
 }
 
-export function interpret(script: string) {
-  parser.map((program) => new HBVM().run(program)).parse(script);
+export function liftEnvErrorM<V>(
+  m: Monad<StateT<Env, ErrorT<string, Identity>>, V>
+): VM<V> {
+  return StateT.lift<Stack, StateT<Env, ErrorT<string, Identity>>, V>(m);
 }
 
-class HBVM {
-  private static root = typeof window != "undefined" ? document.body : null;
-  private cursor = HBVM.root;
-  private stack: any[] = [];
-  private base = 0;
+export const NOOP = StackEnvErrorM.unit(undefined);
 
-  get(path: string[], context: any) {
-    if (path.length == 0) return globalThis;
-    const [scope, ...scopedPath] = path;
-    const root = scope === "this" ? context : globalThis[scope];
-    return scopedPath.reduce((node, name) => node[name], root);
-  }
-
-  set(path: string[], value: any, context: any) {
-    this.get(path.slice(0, -1), context)[last(path)] = value;
-  }
-
-  public run(program: AST[], context?: any) {
-    const prevBase = this.base;
-    this.base = this.stack.length;
-    program.forEach((inst) => {
-      this.execute(inst, context);
-    });
-    const result = last(this.stack);
-    // this.stack.length = this.base;
-    this.stack = this.stack.slice(0, this.base);
-    this.base = prevBase;
-    return result;
-  }
-
-  private execute(inst: AST, context?: any) {
-    console.group(print(inst));
-    switch (inst.type) {
-      case "SET_CURSOR": {
-        this.cursor = this.stack.pop();
-        break;
-      }
-      case "RST": {
-        this.stack = this.stack.slice(0, this.base);
-        this.cursor = HBVM.root;
-        break;
-      }
-      case "RST_VAR": {
-        this.cursor = HBVM.root;
-        this.stack = this.stack.slice(0, this.base);
-        this.stack.push(this.get(inst.path, context));
-        break;
-      }
-      case "LOAD_VAR": {
-        this.stack.push(this.get(inst.path, context));
-        break;
-      }
-      case "STORE_VAR": {
-        this.set(inst.path, last(this.stack), context);
-        break;
-      }
-      case "EVAL_EXPR": {
-        this.stack.push(eval(inst.value));
-        break;
-      }
-      case "LOAD_CONST": {
-        this.stack.push(inst.value);
-        break;
-      }
-      case "NODE": {
-        const node = document.createElement(inst.tag);
-        this.stack.push(node);
-        this.cursor.append(node);
-        break;
-      }
-      case "SET": {
-        const receiver = last(this.stack);
-        const value = inst.path ? this.get(inst.path, context) : inst.literal;
-        receiver[inst.name] = value;
-        if (typeof window != "undefined" && receiver instanceof HTMLElement) {
-          receiver.style[inst.name] = value;
-        }
-        break;
-      }
-      case "BLOCK": {
-        const result = this.run(inst.body, context);
-        this.stack.push(result);
-        break;
-      }
-      case "COND": {
-        // const test = this.stack.pop();
-        const test = last(this.stack);
-        const result = this.run(
-          test ? inst.consequent : inst.alternate,
-          context
-        );
-        this.stack.pop();
-        this.stack.push(result);
-        break;
-      }
-      case "HANDLE": {
-        const receiver = last(this.stack);
-        const thisVM = this;
-        const fn = function (argument: any) {
-          thisVM.stack.push(argument);
-          const result = thisVM.run(inst.body, this);
-          thisVM.stack.pop(); // pop the argument
-          return result;
-        };
-        receiver[inst.name] = fn;
-        if (typeof window != "undefined" && receiver instanceof HTMLElement) {
-          receiver["on" + inst.name] = fn;
-        }
-        break;
-      }
-      case "SEND_MSG": {
-        const receiver = this.get(inst.receiver, context);
-        const argument = this.stack.pop();
-        const result = receiver[inst.method](argument);
-        this.stack.push(result);
-        break;
-      }
-      case "APPLY_FUNC": {
-        const func = globalThis[inst.func];
-        const argument = this.stack.pop();
-        const result = func(argument);
-        this.stack.push(result);
-        break;
-      }
-      case "APPLY_OP": {
-        const unary = new Set(["!"]);
-        if (unary.has(inst.op)) {
-          const right = JSON.stringify(this.stack.pop());
-          const result = eval(`${inst.op}${right}`);
-          this.stack.push(result);
-        } else {
-          const right = JSON.stringify(this.stack.pop());
-          const left = JSON.stringify(this.stack.pop());
-          const result = eval(`${left} ${inst.op} ${right}`);
-          this.stack.push(result);
-        }
-        break;
-      }
-      default:
-        console.log(inst);
-    }
-    if (this.stack.length < this.base) {
-      throw "STACK IS EMPTY";
-    }
-    console.debug(...this.stack);
-    console.groupEnd();
-  }
+export function __LOG__<V>(tag: string) {
+  return function (value?: V): VM<V> {
+    return StackEnvErrorM.getState()
+      .bind((stack) => {
+        // console.log([...stack]);
+        return NOOP;
+      })
+      .bind(() => liftEnvErrorM(EnvErrorM.getState()))
+      .bind((env) => {
+        // console.log(env);
+        return NOOP;
+      })
+      .bind(() => {
+        console.log(tag, value);
+        return NOOP;
+      })
+      .bind(() => StackEnvErrorM.unit(value));
+  };
 }
 
-globalThis["interpret"] = interpret;
+export function RESET(): VM<void> {
+  return StackEnvErrorM.putState([]);
+}
+
+export function PUSH(v: any): VM<void> {
+  return StackEnvErrorM.getState()
+    .bind((stack) => StackEnvErrorM.putState([...stack, v]))
+    .bind(() => StackEnvErrorM.getState())
+    .bind(() => StackEnvErrorM.unit(undefined));
+}
+
+export function PEEK(): VM<any> {
+  return StackEnvErrorM.getState().bind((stack) =>
+    stack.length
+      ? liftErrorM(ErrorM.unit(stack[stack.length - 1]))
+      : liftErrorM(ErrorM.err("out of bounds"))
+  );
+}
+
+export function POP(): VM<any> {
+  return StackEnvErrorM.getState().bind((stack) =>
+    stack.length
+      ? StackEnvErrorM.putState(stack.slice(0, -1)).bind(() =>
+          StackEnvErrorM.unit(stack[stack.length - 1])
+        )
+      : liftErrorM(ErrorM.err("out of bounds"))
+  );
+}
+
+export function LOOKUP(path: string[]): VM<any> {
+  return __LOG__("LOOKUP")(path).bind(() =>
+    liftEnvErrorM(EnvErrorM.getState()).bind((env) =>
+      StackEnvErrorM.unit(path.reduce((cur, p) => cur?.[p], env))
+    )
+  );
+}
+
+export function SAFE_LOOKUP(path: string[]): VM<any> {
+  return __LOG__("SAFE_LOOKUP")(path).bind(() =>
+    liftEnvErrorM(EnvErrorM.getState()).bind((env) => {
+      const res = path.reduce((cur, p) => cur?.[p], env);
+      return liftErrorM(
+        res !== undefined ? ErrorM.unit(res) : ErrorM.err(`${path} not found`)
+      );
+    })
+  );
+}
+
+export function SET_IN_PLACE(root: any, path: string[], value: any): VM<any> {
+  return path.length === 0
+    ? liftErrorM(ErrorM.err("end reached?"))
+    : path.length === 1
+    ? StackEnvErrorM.unit(((root[path[0]] = value), root))
+    : SET_IN_PLACE(
+        typeof root[path[0]] != "object" || root[path[0]] == null
+          ? (root[path[0]] = {})
+          : root[path[0]],
+        path.slice(1),
+        value
+      ).bind(() => StackEnvErrorM.unit(root));
+}
+
+export function SET_FROM_ROOT(path: string[], value: any): VM<any> {
+  return liftEnvErrorM(EnvErrorM.getState()).bind((env) =>
+    SET_IN_PLACE(env, path, value)
+  );
+}
