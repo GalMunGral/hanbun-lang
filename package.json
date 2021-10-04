@@ -11,7 +11,8 @@
   },
   "scripts": {
     "start": "tsc && serve dist",
-    "test": "tsc && node --experimental-modules dist/hanbun-lang/__test__.js"
+    "test": "tsc && node --experimental-modules dist/hanbun-lang/__test__.js",
+    "test:vm": "tsc && node --experimental-modules dist/hanbun-lang/vm-fp/__test__.js"
   },
   "repository": {
     "type": "git",
