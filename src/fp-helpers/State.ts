@@ -3,7 +3,6 @@ import { Monad, MonadImpl } from "./types.js";
 type StateOps<S, M> = {
   getState(): Monad<StateT<S, M>, S>;
   putState(s: S): Monad<StateT<S, M>, void>;
-  update(f: (s: S) => S): Monad<StateT<S, M>, S>;
 };
 
 export class StateT<S, M> {
@@ -69,17 +68,6 @@ export class StateT<S, M> {
             m.unit({
               state: s,
               value: undefined,
-            })
-          ),
-          ...StateT.trans<any, M, any>(m),
-        };
-      },
-      update(f) {
-        return {
-          data: new StateT((s) =>
-            m.unit({
-              state: f(s),
-              value: s,
             })
           ),
           ...StateT.trans<any, M, any>(m),

@@ -1,10 +1,9 @@
 import { Monad } from "./types.js";
 import { Error } from "./Error.js";
 
-class Ok<T> {
+export class Ok<T> {
   constructor(public value: T, public next: string) {}
 }
-
 export class Err {
   constructor(public message: string, public next: string) {}
 }
@@ -14,16 +13,16 @@ type ParseFn<T> = (s: string) => Result<T>;
 type Apply<A, B> = A extends (b: B) => infer C ? C : never;
 
 export class Parser<T> {
-  static err<T>(msg: string, next: string) {
+  static err<T>(msg: string, next: string): Result<T> {
     return Error.instance<Err, Ok<T>>().err(new Err(msg, next));
   }
   static ok<T>(val: T, next: string): Result<T> {
     return Error.instance<Err, Ok<T>>().unit(new Ok(val, next));
   }
-  static pure<T>(value: T) {
+  static pure<T>(value: T): Parser<T> {
     return new Parser<T>((s) => Parser.ok(value, s));
   }
-  static noop<T>() {
+  static noop<T>(): Parser<T> {
     return new Parser<T>((s) => Parser.err("", s));
   }
 
