@@ -1,42 +1,35 @@
 import { Monad } from "./fp-helpers/types.js";
-import { Identity } from "./fp-helpers/Identity.js";
-import { ErrorT } from "./fp-helpers/ErrorT.js";
-import { StateT } from "./fp-helpers/StateT.js";
+import { Error } from "./fp-helpers/Error.js";
+import { StateT } from "./fp-helpers/State.js";
 
 export type Env = any;
 export type Stack = any[];
-export type VM<V> = Monad<
-  StateT<Stack, StateT<Env, ErrorT<string, Identity>>>,
-  V
->;
+export type VM<V> = Monad<StateT<Stack, StateT<Env, Error<string>>>, V>;
 
-const Id = Identity.instance();
-export const ErrorM = ErrorT.trans<string, Identity, any>(Id);
-export const EnvErrorM = StateT.trans<Env, ErrorT<string, Identity>, any>(
-  ErrorM
-);
+export const ErrorM = Error.instance<string, any>();
+export const EnvErrorM = StateT.trans<Env, Error<string>, any>(ErrorM);
 export const StackEnvErrorM = StateT.trans<
   Stack,
-  StateT<Env, ErrorT<string, Identity>>,
+  StateT<Env, Error<string>>,
   any
 >(EnvErrorM);
 
-export function liftErrorM<V>(m: Monad<ErrorT<string, Identity>, V>): VM<V> {
-  return StateT.lift<Stack, StateT<Env, ErrorT<string, Identity>>, V>(
-    StateT.lift<Env, ErrorT<string, Identity>, V>(m)
+export function liftErrorM<V>(m: Monad<Error<string>, V>): VM<V> {
+  return StateT.lift<Stack, StateT<Env, Error<string>>, V>(
+    StateT.lift<Env, Error<string>, V>(m)
   );
 }
 
 export function liftEnvErrorM<V>(
-  m: Monad<StateT<Env, ErrorT<string, Identity>>, V>
+  m: Monad<StateT<Env, Error<string>>, V>
 ): VM<V> {
-  return StateT.lift<Stack, StateT<Env, ErrorT<string, Identity>>, V>(m);
+  return StateT.lift<Stack, StateT<Env, Error<string>>, V>(m);
 }
 
 export const NOOP = StackEnvErrorM.unit(undefined);
 
 export const RUN = (stack: Stack, env: Env) => (task: VM<any>) => {
-  return task.data.run(stack).data.run(env).data.run.data;
+  console.log(task.data.run(stack).data.run(env).data);
 };
 
 export function RESET(): VM<void> {

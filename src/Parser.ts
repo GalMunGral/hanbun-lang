@@ -1,5 +1,5 @@
 import { NOOP, VM } from "./VM.js";
-import { Ok, Err, Parser, fail, pure } from "./fp-helpers/Parser.js";
+import { Err, Parser } from "./fp-helpers/Parser.js";
 import {
   COND,
   HANDLE,
@@ -18,13 +18,13 @@ import {
 } from "./Interpreter.js";
 
 const r = (r: RegExp) =>
-  new Parser<string, string>((s) => {
+  new Parser<string>((s) => {
     const match = s.match(r);
     if (match == null || (match.index && match.index > 0)) {
-      return new Err(`Expected ${r} at "${s}"`, s);
+      return Parser.err(`Expected ${r} at "${s}"`, s);
     }
     const token = match[0];
-    return new Ok(token, s.slice(token.length));
+    return Parser.ok(token, s.slice(token.length));
   });
 
 const ws = r(/\s*/);
@@ -32,8 +32,8 @@ const period = r(/。/);
 const quoted = r(/(「|『).+?(」|』)/).map((r) => r.slice(1, -1));
 const self = r(/吾/).map(() => "__self__");
 const attrPath = r(/之/).apr(quoted).sep(ws);
-const variablePath = fail.or(() =>
-  pure((root: any) => (path: string[]) => [root, ...path])
+const variablePath = Parser.noop().or(() =>
+  Parser.pure((root: any) => (path: string[]) => [root, ...path])
     .ap(quoted.or(() => self))
     .ap(attrPath)
 );
@@ -42,8 +42,8 @@ function sequence(actions: VM<any>[]): VM<any> {
   return actions.reduce((prev, cur) => prev.bind(() => cur), NOOP);
 }
 
-const block: Parser<VM<void>, any> = fail.or(() =>
-  pure(sequence)
+const block = Parser.noop<VM<void>>().or(() =>
+  Parser.pure(sequence)
     .apl(r(/曰(「|『)/))
     .apl(ws)
     .ap(instruction.sep(ws))
@@ -51,9 +51,9 @@ const block: Parser<VM<void>, any> = fail.or(() =>
     .apl(r(/(」|』)/))
 );
 
-const conditional: Parser<VM<void>, any> = fail
+const conditional = Parser.noop<VM<void>>()
   .or(() =>
-    pure(COND)
+    Parser.pure(COND)
       .apl(r(/然。/))
       .apl(ws)
       .ap(block)
@@ -63,25 +63,25 @@ const conditional: Parser<VM<void>, any> = fail
       .ap(block)
   )
   .or(() =>
-    pure((alt: VM<void>) => COND(NOOP)(alt))
+    Parser.pure((alt: VM<void>) => COND(NOOP)(alt))
       .apl(r(/不然。?/))
       .apl(ws)
       .ap(block)
   )
   .or(() =>
-    pure((cons: VM<void>) => COND(cons)(NOOP))
+    Parser.pure((cons: VM<void>) => COND(cons)(NOOP))
       .apl(r(/然。?/))
       .apl(ws)
       .ap(block)
   );
 
-const defineMethod: Parser<VM<void>, any> = fail.or(() =>
-  pure(HANDLE).apl(r(/聞/)).ap(quoted).apl(r(/而/)).ap(block)
+const defineMethod = Parser.noop<VM<void>>().or(() =>
+  Parser.pure(HANDLE).apl(r(/聞/)).ap(quoted).apl(r(/而/)).ap(block)
 );
 
-const applyMethod: Parser<VM<void>, any> = fail
+const applyMethod = Parser.noop<VM<void>>()
   .or(() =>
-    pure(SEND_MSG)
+    Parser.pure(SEND_MSG)
       .apl(r(/望/))
       .ap(variablePath)
       .ap(quoted)
@@ -89,52 +89,52 @@ const applyMethod: Parser<VM<void>, any> = fail
       .apl(period)
   )
   .or(() =>
-    pure(SEND_MSG(["__self__"]))
+    Parser.pure(SEND_MSG(["__self__"]))
       .apl(r(/吾欲/))
       .ap(quoted)
       .apl(r(/之?/))
       .apl(period)
   );
 
-const loadVar: Parser<VM<void>, any> = fail.or(() =>
-  pure(LOAD_VAR)
+const loadVar = Parser.noop<VM<void>>().or(() =>
+  Parser.pure(LOAD_VAR)
     .apl(r(/吾?有彼/))
     .ap(variablePath)
     .apl(period)
 );
 
-const resetAndloadVar: Parser<VM<void>, any> = fail.or(() =>
-  pure(RST_VAR).apl(r(/夫/)).ap(variablePath).apl(period)
+const resetAndloadVar = Parser.noop<VM<void>>().or(() =>
+  Parser.pure(RST_VAR).apl(r(/夫/)).ap(variablePath).apl(period)
 );
 
-const loadConst: Parser<VM<void>, any> = fail
+const loadConst = Parser.noop<VM<void>>()
   .or(() =>
-    pure(LOAD_CONST)
+    Parser.pure(LOAD_CONST)
       .apl(r(/有數曰/))
       .ap(quoted.map(Number))
       .apl(period)
   )
   .or(() =>
-    pure(LOAD_CONST)
+    Parser.pure(LOAD_CONST)
       .apl(r(/有言曰/))
       .ap(quoted)
       .apl(period)
   );
 
-const evalExpression = fail.or(() =>
-  pure(EVAL)
+const evalExpression = Parser.noop<VM<void>>().or(() =>
+  Parser.pure(EVAL)
     .apl(r(/誦/))
     .ap(quoted)
     .apl(r(/而生一物/))
     .apl(period)
 );
 
-const domNode: Parser<VM<void>, any> = fail.or(() =>
-  pure(NODE).apl(r(/有/)).ap(quoted).apl(period)
+const domNode = Parser.noop<VM<void>>().or(() =>
+  Parser.pure(NODE).apl(r(/有/)).ap(quoted).apl(period)
 );
 
-const applyOperator: Parser<VM<void>, any> = fail.or(() =>
-  pure(APPLY_OP)
+const applyOperator = Parser.noop<VM<void>>().or(() =>
+  Parser.pure(APPLY_OP)
     .apl(r(/請/))
     .apl(ws)
     .ap(quoted)
@@ -143,28 +143,33 @@ const applyOperator: Parser<VM<void>, any> = fail.or(() =>
     .apl(period)
 );
 
-const applyFunction: Parser<VM<void>, any> = fail.or(() =>
-  pure(APPLY_FUNC).apl(r(/請君/)).apl(ws).ap(quoted).apl(r(/之?/)).apl(period)
+const applyFunction = Parser.noop<VM<void>>().or(() =>
+  Parser.pure(APPLY_FUNC)
+    .apl(r(/請君/))
+    .apl(ws)
+    .ap(quoted)
+    .apl(r(/之?/))
+    .apl(period)
 );
 
-const storeVar: Parser<VM<void>, any> = fail
+const storeVar = Parser.noop<VM<void>>()
   .or(() =>
-    pure(STORE_VAR)
+    Parser.pure(STORE_VAR)
       .apl(r(/彼?/))
       .ap(variablePath)
       .apl(r(/當如是/))
       .apl(period)
   )
   .or(() =>
-    pure(STORE_VAR)
+    Parser.pure(STORE_VAR)
       .apl(r(/是為|或曰/))
       .ap(variablePath)
       .apl(period)
   );
 
-const setProperty: Parser<VM<void>, any> = fail
+const setProperty = Parser.noop<VM<void>>()
   .or(() =>
-    pure(SETP_VAR)
+    Parser.pure(SETP_VAR)
       .apl(r(/其/))
       .ap(quoted)
       .apl(r(/者/))
@@ -176,7 +181,7 @@ const setProperty: Parser<VM<void>, any> = fail
       .apl(period)
   )
   .or(() =>
-    pure(SETP_VAL)
+    Parser.pure(SETP_VAL)
       .apl(r(/其/))
       .ap(quoted)
       .apl(r(/者/))
@@ -186,11 +191,13 @@ const setProperty: Parser<VM<void>, any> = fail
       .apl(r(/也/))
       .apl(period)
   )
-  .or(() => pure(SETP_VAL).apl(r(/其?/)).ap(quoted).ap(quoted).apl(period));
+  .or(() =>
+    Parser.pure(SETP_VAL).apl(r(/其?/)).ap(quoted).ap(quoted).apl(period)
+  );
 
-const setCursor: Parser<VM<void>, any> = pure(SET_CURSOR).apl(r(/内/));
+const setCursor = Parser.pure<VM<void>>(SET_CURSOR).apl(r(/内/));
 
-const instruction: Parser<any, string> = fail
+const instruction = Parser.noop<VM<void>>()
   .or(() => block)
   .or(() => conditional)
   .or(() => defineMethod)
@@ -206,7 +213,7 @@ const instruction: Parser<any, string> = fail
   .or(() => setProperty)
   .or(() => setCursor);
 
-export const program: Parser<VM<void>, any> = pure(sequence)
+export const program = Parser.pure(sequence)
   .apl(ws)
   .ap(instruction.sep(ws))
   .apl(ws);
