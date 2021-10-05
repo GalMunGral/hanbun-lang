@@ -1,7 +1,7 @@
 import { Monad } from "./fp-helpers/types.js";
 import { Identity } from "./fp-helpers/Identity.js";
-import { ErrorT } from "./fp-helpers/Error.js";
-import { StateT } from "./fp-helpers/State.js";
+import { ErrorT } from "./fp-helpers/ErrorT.js";
+import { StateT } from "./fp-helpers/StateT.js";
 
 export type Env = any;
 export type Stack = any[];
@@ -35,25 +35,9 @@ export function liftEnvErrorM<V>(
 
 export const NOOP = StackEnvErrorM.unit(undefined);
 
-export function __LOG__<V>(tag: string) {
-  return function (value?: V): VM<V> {
-    return StackEnvErrorM.getState()
-      .bind((stack) => {
-        // console.log([...stack]);
-        return NOOP;
-      })
-      .bind(() => liftEnvErrorM(EnvErrorM.getState()))
-      .bind((env) => {
-        // console.log(env);
-        return NOOP;
-      })
-      .bind(() => {
-        console.log(tag, value);
-        return NOOP;
-      })
-      .bind(() => StackEnvErrorM.unit(value));
-  };
-}
+export const RUN = (stack: Stack, env: Env) => (task: VM<any>) => {
+  return task.data.run(stack).data.run(env).data.run.data;
+};
 
 export function RESET(): VM<void> {
   return StackEnvErrorM.putState([]);
@@ -85,30 +69,26 @@ export function POP(): VM<any> {
 }
 
 export function LOOKUP(path: string[]): VM<any> {
-  return __LOG__("LOOKUP")(path).bind(() =>
-    liftEnvErrorM(EnvErrorM.getState()).bind((env) =>
-      StackEnvErrorM.unit(path.reduce((cur, p) => cur?.[p], env))
-    )
+  return liftEnvErrorM(EnvErrorM.getState()).bind((env) =>
+    StackEnvErrorM.unit(path.reduce((cur, p) => cur?.[p], env))
   );
 }
 
 export function SAFE_LOOKUP(path: string[]): VM<any> {
-  return __LOG__("SAFE_LOOKUP")(path).bind(() =>
-    liftEnvErrorM(EnvErrorM.getState()).bind((env) => {
-      const res = path.reduce((cur, p) => cur?.[p], env);
-      return liftErrorM(
-        res !== undefined ? ErrorM.unit(res) : ErrorM.err(`${path} not found`)
-      );
-    })
-  );
+  return liftEnvErrorM(EnvErrorM.getState()).bind((env) => {
+    const res = path.reduce((cur, p) => cur?.[p], env);
+    return liftErrorM(
+      res !== undefined ? ErrorM.unit(res) : ErrorM.err(`${path} not found`)
+    );
+  });
 }
 
-export function SET_IN_PLACE(root: any, path: string[], value: any): VM<any> {
+export function UPDATE(root: any, path: string[], value: any): VM<any> {
   return path.length === 0
     ? liftErrorM(ErrorM.err("end reached?"))
     : path.length === 1
     ? StackEnvErrorM.unit(((root[path[0]] = value), root))
-    : SET_IN_PLACE(
+    : UPDATE(
         typeof root[path[0]] != "object" || root[path[0]] == null
           ? (root[path[0]] = {})
           : root[path[0]],
@@ -117,8 +97,8 @@ export function SET_IN_PLACE(root: any, path: string[], value: any): VM<any> {
       ).bind(() => StackEnvErrorM.unit(root));
 }
 
-export function SET_FROM_ROOT(path: string[], value: any): VM<any> {
+export function UPDATE_ROOT(path: string[], value: any): VM<any> {
   return liftEnvErrorM(EnvErrorM.getState()).bind((env) =>
-    SET_IN_PLACE(env, path, value)
+    UPDATE(env, path, value)
   );
 }
