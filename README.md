@@ -33,7 +33,7 @@ In S-expressions:
 
 ## Hanbun VM Instructions
 - Stack: `RESET`, `PUSH (val)`, `PEEK`, `POP`
-- Memory: `LOOKUP (path)`, `SAFE_LOOKUP (path)`, `UPDATE (namespace, path, val)`, `UPDATE_ROOT (path, val)`
+- Memory: `LOOKUP (path)`, `SAFE_LOOKUP (path)`, `UPDATE (ns, path, val)`, `UPDATE_ROOT (path, val)`
  
 ## Hanbun Language Grammar
 
