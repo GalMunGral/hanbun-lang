@@ -33,18 +33,18 @@ export const RUN = (stack: Stack, env: Env) => (task: VM<any>) => {
 };
 
 export function RESET(): VM<void> {
-  return StackEnvErrorM.putState([]);
+  return StackEnvErrorM.PUT([]);
 }
 
 export function PUSH(v: any): VM<void> {
-  return StackEnvErrorM.getState()
-    .bind((stack) => StackEnvErrorM.putState([...stack, v]))
-    .bind(() => StackEnvErrorM.getState())
+  return StackEnvErrorM.GET()
+    .bind((stack) => StackEnvErrorM.PUT([...stack, v]))
+    .bind(() => StackEnvErrorM.GET())
     .bind(() => StackEnvErrorM.unit(undefined));
 }
 
 export function PEEK(): VM<any> {
-  return StackEnvErrorM.getState().bind((stack) =>
+  return StackEnvErrorM.GET().bind((stack) =>
     stack.length
       ? liftErrorM(ErrorM.unit(stack[stack.length - 1]))
       : liftErrorM(ErrorM.err("out of bounds"))
@@ -52,9 +52,9 @@ export function PEEK(): VM<any> {
 }
 
 export function POP(): VM<any> {
-  return StackEnvErrorM.getState().bind((stack) =>
+  return StackEnvErrorM.GET().bind((stack) =>
     stack.length
-      ? StackEnvErrorM.putState(stack.slice(0, -1)).bind(() =>
+      ? StackEnvErrorM.PUT(stack.slice(0, -1)).bind(() =>
           StackEnvErrorM.unit(stack[stack.length - 1])
         )
       : liftErrorM(ErrorM.err("out of bounds"))
@@ -62,13 +62,13 @@ export function POP(): VM<any> {
 }
 
 export function LOOKUP(path: string[]): VM<any> {
-  return liftEnvErrorM(EnvErrorM.getState()).bind((env) =>
+  return liftEnvErrorM(EnvErrorM.GET()).bind((env) =>
     StackEnvErrorM.unit(path.reduce((cur, p) => cur?.[p], env))
   );
 }
 
 export function SAFE_LOOKUP(path: string[]): VM<any> {
-  return liftEnvErrorM(EnvErrorM.getState()).bind((env) => {
+  return liftEnvErrorM(EnvErrorM.GET()).bind((env) => {
     const res = path.reduce((cur, p) => cur?.[p], env);
     return liftErrorM(
       res !== undefined ? ErrorM.unit(res) : ErrorM.err(`${path} not found`)
@@ -91,7 +91,5 @@ export function UPDATE(root: any, path: string[], value: any): VM<any> {
 }
 
 export function UPDATE_ROOT(path: string[], value: any): VM<any> {
-  return liftEnvErrorM(EnvErrorM.getState()).bind((env) =>
-    UPDATE(env, path, value)
-  );
+  return liftEnvErrorM(EnvErrorM.GET()).bind((env) => UPDATE(env, path, value));
 }

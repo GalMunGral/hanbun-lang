@@ -23,9 +23,9 @@ export const COND = (cons: VM<void>) => (alt: VM<void>) =>
 export const HANDLE = (name: string) => (body: VM<void>) =>
   PEEK().bind((target) =>
     StackEnvErrorM.unit(
-      liftEnvErrorM(EnvErrorM.getState()).bind((oldEnv) =>
+      liftEnvErrorM(EnvErrorM.GET()).bind((oldEnv) =>
         liftEnvErrorM(
-          EnvErrorM.putState({
+          EnvErrorM.PUT({
             __proto__: oldEnv,
             __self__: target,
             document: window.document,
@@ -33,7 +33,7 @@ export const HANDLE = (name: string) => (body: VM<void>) =>
           })
         )
           .bind(() => body)
-          .bind(() => liftEnvErrorM(EnvErrorM.putState(oldEnv)))
+          .bind(() => liftEnvErrorM(EnvErrorM.PUT(oldEnv)))
       )
     ).bind((FUNC) =>
       UPDATE(target, [name], FUNC).bind(() =>

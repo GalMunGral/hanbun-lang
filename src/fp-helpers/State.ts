@@ -1,8 +1,8 @@
 import { Monad, MonadImpl } from "./types.js";
 
 type StateOps<S, M> = {
-  getState(): Monad<StateT<S, M>, S>;
-  putState(s: S): Monad<StateT<S, M>, void>;
+  GET(): Monad<StateT<S, M>, S>;
+  PUT(s: S): Monad<StateT<S, M>, void>;
 };
 
 export class StateT<S, M> {
@@ -51,7 +51,7 @@ export class StateT<S, M> {
           ...StateT.trans<any, M, any>(m),
         };
       },
-      getState() {
+      GET() {
         return {
           data: new StateT((state) =>
             m.unit({
@@ -62,7 +62,7 @@ export class StateT<S, M> {
           ...StateT.trans<any, M, any>(m),
         };
       },
-      putState(s) {
+      PUT(s) {
         return {
           data: new StateT(() =>
             m.unit({
