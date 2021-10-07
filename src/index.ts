@@ -1,8 +1,8 @@
-import { RUN } from "./VM.js";
+import { run } from "./VM.js";
 import { program } from "./Parser.js";
 
 export function interpret(script: string) {
-  program.map(RUN([], window)).parse(script);
+  program.map(run).parse(script);
 }
 
 document

@@ -1,23 +1,32 @@
-import { Monad } from "./types.js";
-import { Error } from "./Error.js";
-
 export class Ok<T> {
   constructor(public value: T, public next: string) {}
 }
-export class Err {
-  constructor(public message: string, public next: string) {}
+export class Err<T> {
+  constructor(public message: T, public next: string) {}
 }
 
-type Result<T> = Monad<Error<Err>, Ok<T>>;
+class Error<A, E> {
+  constructor(public ok: A, public err: E) {}
+  public map<B>(f: (_: A) => B): Error<B, E> {
+    return this.err != null
+      ? new Error(undefined, this.err)
+      : new Error(f(this.ok), undefined);
+  }
+  public bind<B>(f: (_: A) => Error<B, E>): Error<B, E> {
+    return this.err != null ? new Error(undefined, this.err) : f(this.ok);
+  }
+}
+
+type Result<T = any> = Error<Ok<T>, Err<string>>;
 type ParseFn<T> = (s: string) => Result<T>;
 type Apply<A, B> = A extends (b: B) => infer C ? C : never;
 
 export class Parser<T> {
-  static err<T>(msg: string, next: string): Result<T> {
-    return Error.instance<Err, Ok<T>>().err(new Err(msg, next));
+  static ok<T>(value: T, next: string): Result<T> {
+    return new Error(new Ok(value, next), undefined);
   }
-  static ok<T>(val: T, next: string): Result<T> {
-    return Error.instance<Err, Ok<T>>().unit(new Ok(val, next));
+  static err(message: string, next: string): Result {
+    return new Error(undefined, new Err(message, next));
   }
   static pure<T>(value: T): Parser<T> {
     return new Parser<T>((s) => Parser.ok(value, s));
@@ -40,23 +49,23 @@ export class Parser<T> {
 
   public tap(fn: (res: T) => void) {
     return new Parser<T>((s) =>
-      this.parse(s).bind((ok) => {
+      this.parse(s).map((ok) => {
         fn(ok.value);
-        return Parser.ok(ok.value, ok.next);
+        return new Ok(ok.value, ok.next);
       })
     );
   }
 
   public map<U>(fn: (a: T) => U) {
     return new Parser<U>((s) =>
-      this.parse(s).bind((ok) => Parser.ok(fn(ok.value), ok.next))
+      this.parse(s).map((ok) => new Ok(fn(ok.value), ok.next))
     );
   }
 
   public or<T1>(next: () => Parser<T1>) {
     return new Parser<T | T1>((s) => {
       const res = this.parse(s);
-      if (res.data.ok) return res;
+      if (res.ok) return res;
       return next().parse(s);
     });
   }
@@ -64,7 +73,9 @@ export class Parser<T> {
   public apl<U>(next: Parser<U>) {
     return new Parser<T>((s) =>
       this.parse(s).bind((ok1) =>
-        next.parse(ok1.next).bind((ok2) => Parser.ok(ok1.value, ok2.next))
+        next.parse(ok1.next).bind((ok2) => {
+          return Parser.ok(ok1.value, ok2.next);
+        })
       )
     );
   }
@@ -72,7 +83,9 @@ export class Parser<T> {
   public apr<U>(next: Parser<U>) {
     return new Parser<U>((s) =>
       this.parse(s).bind((ok1) =>
-        next.parse(ok1.next).bind((ok2) => Parser.ok(ok2.value, ok2.next))
+        next.parse(ok1.next).bind((ok2) => {
+          return Parser.ok(ok2.value, ok2.next);
+        })
       )
     );
   }
@@ -96,7 +109,7 @@ export class Parser<T> {
   public many(): Parser<T[]> {
     return new Parser<T[]>((s) => {
       const res = this.parse(s);
-      if (res.data.err) return Parser.ok([], s);
+      if (res.err) return Parser.ok([], s);
       return res.bind((ok1) =>
         this.many()
           .parse(ok1.next)

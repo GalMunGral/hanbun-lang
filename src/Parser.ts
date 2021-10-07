@@ -1,5 +1,5 @@
-import { NOOP, VM } from "./VM.js";
-import { Err, Parser } from "./fp-helpers/Parser.js";
+import { Parser } from "./fp-helpers/Parser.js";
+import { Eff, noop } from "./fp-helpers/Freer.js";
 import {
   COND,
   HANDLE,
@@ -38,11 +38,11 @@ const variablePath = Parser.noop().or(() =>
     .ap(attrPath)
 );
 
-function sequence(actions: VM<any>[]): VM<any> {
-  return actions.reduce((prev, cur) => prev.bind(() => cur), NOOP);
+function sequence(actions: Eff[]): Eff {
+  return actions.reduce((prev, cur) => prev.bind(() => cur), noop);
 }
 
-const block = Parser.noop<VM<void>>().or(() =>
+const block = Parser.noop<Eff>().or(() =>
   Parser.pure(sequence)
     .apl(r(/曰(「|『)/))
     .apl(ws)
@@ -51,7 +51,7 @@ const block = Parser.noop<VM<void>>().or(() =>
     .apl(r(/(」|』)/))
 );
 
-const conditional = Parser.noop<VM<void>>()
+const conditional = Parser.noop<Eff>()
   .or(() =>
     Parser.pure(COND)
       .apl(r(/然。/))
@@ -63,23 +63,23 @@ const conditional = Parser.noop<VM<void>>()
       .ap(block)
   )
   .or(() =>
-    Parser.pure((alt: VM<void>) => COND(NOOP)(alt))
+    Parser.pure((alt: Eff) => COND(noop)(alt))
       .apl(r(/不然。?/))
       .apl(ws)
       .ap(block)
   )
   .or(() =>
-    Parser.pure((cons: VM<void>) => COND(cons)(NOOP))
+    Parser.pure((cons: Eff) => COND(cons)(noop))
       .apl(r(/然。?/))
       .apl(ws)
       .ap(block)
   );
 
-const defineMethod = Parser.noop<VM<void>>().or(() =>
+const defineMethod = Parser.noop<Eff>().or(() =>
   Parser.pure(HANDLE).apl(r(/聞/)).ap(quoted).apl(r(/而/)).ap(block)
 );
 
-const applyMethod = Parser.noop<VM<void>>()
+const applyMethod = Parser.noop<Eff>()
   .or(() =>
     Parser.pure(SEND_MSG)
       .apl(r(/望/))
@@ -96,18 +96,18 @@ const applyMethod = Parser.noop<VM<void>>()
       .apl(period)
   );
 
-const loadVar = Parser.noop<VM<void>>().or(() =>
+const loadVar = Parser.noop<Eff>().or(() =>
   Parser.pure(LOAD_VAR)
     .apl(r(/吾?有彼/))
     .ap(variablePath)
     .apl(period)
 );
 
-const resetAndloadVar = Parser.noop<VM<void>>().or(() =>
+const resetAndloadVar = Parser.noop<Eff>().or(() =>
   Parser.pure(RST_VAR).apl(r(/夫/)).ap(variablePath).apl(period)
 );
 
-const loadConst = Parser.noop<VM<void>>()
+const loadConst = Parser.noop<Eff>()
   .or(() =>
     Parser.pure(LOAD_CONST)
       .apl(r(/有數曰/))
@@ -121,7 +121,7 @@ const loadConst = Parser.noop<VM<void>>()
       .apl(period)
   );
 
-const evalExpression = Parser.noop<VM<void>>().or(() =>
+const evalExpression = Parser.noop<Eff>().or(() =>
   Parser.pure(EVAL)
     .apl(r(/誦/))
     .ap(quoted)
@@ -129,11 +129,11 @@ const evalExpression = Parser.noop<VM<void>>().or(() =>
     .apl(period)
 );
 
-const domNode = Parser.noop<VM<void>>().or(() =>
+const domNode = Parser.noop<Eff>().or(() =>
   Parser.pure(NODE).apl(r(/有/)).ap(quoted).apl(period)
 );
 
-const applyOperator = Parser.noop<VM<void>>().or(() =>
+const applyOperator = Parser.noop<Eff>().or(() =>
   Parser.pure(APPLY_OP)
     .apl(r(/請/))
     .apl(ws)
@@ -143,7 +143,7 @@ const applyOperator = Parser.noop<VM<void>>().or(() =>
     .apl(period)
 );
 
-const applyFunction = Parser.noop<VM<void>>().or(() =>
+const applyFunction = Parser.noop<Eff>().or(() =>
   Parser.pure(APPLY_FUNC)
     .apl(r(/請君/))
     .apl(ws)
@@ -152,7 +152,7 @@ const applyFunction = Parser.noop<VM<void>>().or(() =>
     .apl(period)
 );
 
-const storeVar = Parser.noop<VM<void>>()
+const storeVar = Parser.noop<Eff>()
   .or(() =>
     Parser.pure(STORE_VAR)
       .apl(r(/彼?/))
@@ -167,7 +167,7 @@ const storeVar = Parser.noop<VM<void>>()
       .apl(period)
   );
 
-const setProperty = Parser.noop<VM<void>>()
+const setProperty = Parser.noop<Eff>()
   .or(() =>
     Parser.pure(SETP_VAR)
       .apl(r(/其/))
@@ -195,9 +195,9 @@ const setProperty = Parser.noop<VM<void>>()
     Parser.pure(SETP_VAL).apl(r(/其?/)).ap(quoted).ap(quoted).apl(period)
   );
 
-const setCursor = Parser.pure<VM<void>>(SET_CURSOR).apl(r(/内/));
+const setCursor = Parser.pure<Eff>(SET_CURSOR).apl(r(/内/));
 
-const instruction = Parser.noop<VM<void>>()
+const instruction = Parser.noop<Eff>()
   .or(() => block)
   .or(() => conditional)
   .or(() => defineMethod)

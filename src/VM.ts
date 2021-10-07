@@ -1,95 +1,127 @@
-import { Monad } from "./fp-helpers/types.js";
-import { Error } from "./fp-helpers/Error.js";
-import { StateT } from "./fp-helpers/State.js";
+import { Eff, Pure } from "./fp-helpers/Freer.js";
 
-export type Env = any;
-export type Stack = any[];
-export type VM<V> = Monad<StateT<Stack, StateT<Env, Error<string>>>, V>;
-
-export const ErrorM = Error.instance<string, any>();
-export const EnvErrorM = StateT.trans<Env, Error<string>, any>(ErrorM);
-export const StackEnvErrorM = StateT.trans<
-  Stack,
-  StateT<Env, Error<string>>,
-  any
->(EnvErrorM);
-
-export function liftErrorM<V>(m: Monad<Error<string>, V>): VM<V> {
-  return StateT.lift<Stack, StateT<Env, Error<string>>, V>(
-    StateT.lift<Env, Error<string>, V>(m)
-  );
+export class ERROR {
+  constructor(public message: string) {}
+}
+export class RESET {}
+export class PUSH {
+  constructor(public val: any) {}
+}
+export class PEEK {}
+export class POP {}
+export class GET_ENV {}
+export class PUT_ENV {
+  constructor(public root: any) {}
+}
+export class LOOKUP {
+  constructor(public path: string[]) {}
+}
+export class SAFE_LOOKUP {
+  constructor(public path: string[]) {}
+}
+export class UPDATE {
+  constructor(public root: any, public path: string[], public value: any) {}
+}
+export class UPDATE_ROOT {
+  constructor(public path: string[], public value: any) {}
 }
 
-export function liftEnvErrorM<V>(
-  m: Monad<StateT<Env, Error<string>>, V>
-): VM<V> {
-  return StateT.lift<Stack, StateT<Env, Error<string>>, V>(m);
+export function run(m: Eff<any>) {
+  new Instance().run(m);
 }
 
-export const NOOP = StackEnvErrorM.unit(undefined);
+export class Instance {
+  private stack: any[] = [];
+  private env: any = window;
 
-export const RUN = (stack: Stack, env: Env) => (task: VM<any>) => {
-  console.log(task.data.run(stack).data.run(env).data);
-};
+  public run(m: Eff<any>) {
+    if (m instanceof Pure) return;
+    const { eff, cont } = m.functor;
+    this.run(cont(this.handle(eff)));
+  }
 
-export function RESET(): VM<void> {
-  return StackEnvErrorM.PUT([]);
-}
-
-export function PUSH(v: any): VM<void> {
-  return StackEnvErrorM.GET()
-    .bind((stack) => StackEnvErrorM.PUT([...stack, v]))
-    .bind(() => StackEnvErrorM.GET())
-    .bind(() => StackEnvErrorM.unit(undefined));
-}
-
-export function PEEK(): VM<any> {
-  return StackEnvErrorM.GET().bind((stack) =>
-    stack.length
-      ? liftErrorM(ErrorM.unit(stack[stack.length - 1]))
-      : liftErrorM(ErrorM.err("out of bounds"))
-  );
-}
-
-export function POP(): VM<any> {
-  return StackEnvErrorM.GET().bind((stack) =>
-    stack.length
-      ? StackEnvErrorM.PUT(stack.slice(0, -1)).bind(() =>
-          StackEnvErrorM.unit(stack[stack.length - 1])
-        )
-      : liftErrorM(ErrorM.err("out of bounds"))
-  );
-}
-
-export function LOOKUP(path: string[]): VM<any> {
-  return liftEnvErrorM(EnvErrorM.GET()).bind((env) =>
-    StackEnvErrorM.unit(path.reduce((cur, p) => cur?.[p], env))
-  );
-}
-
-export function SAFE_LOOKUP(path: string[]): VM<any> {
-  return liftEnvErrorM(EnvErrorM.GET()).bind((env) => {
-    const res = path.reduce((cur, p) => cur?.[p], env);
-    return liftErrorM(
-      res !== undefined ? ErrorM.unit(res) : ErrorM.err(`${path} not found`)
-    );
-  });
-}
-
-export function UPDATE(root: any, path: string[], value: any): VM<any> {
-  return path.length === 0
-    ? liftErrorM(ErrorM.err("end reached?"))
-    : path.length === 1
-    ? StackEnvErrorM.unit(((root[path[0]] = value), root))
-    : UPDATE(
-        typeof root[path[0]] != "object" || root[path[0]] == null
-          ? (root[path[0]] = {})
-          : root[path[0]],
-        path.slice(1),
-        value
-      ).bind(() => StackEnvErrorM.unit(root));
-}
-
-export function UPDATE_ROOT(path: string[], value: any): VM<any> {
-  return liftEnvErrorM(EnvErrorM.GET()).bind((env) => UPDATE(env, path, value));
+  private handle(
+    eff:
+      | ERROR
+      | RESET
+      | PUSH
+      | PEEK
+      | POP
+      | GET_ENV
+      | PUT_ENV
+      | LOOKUP
+      | SAFE_LOOKUP
+      | UPDATE
+      | UPDATE_ROOT
+  ): any {
+    if (eff instanceof ERROR) {
+      throw eff.message;
+    }
+    if (eff instanceof RESET) {
+      this.stack = [];
+      return;
+    }
+    if (eff instanceof PUSH) {
+      this.stack.push(eff.val);
+      return;
+    }
+    if (eff instanceof POP) {
+      return this.stack.pop();
+    }
+    if (eff instanceof PEEK) {
+      if (!this.stack.length) throw "nothing on stack!";
+      return this.stack[this.stack.length - 1];
+    }
+    if (eff instanceof GET_ENV) {
+      return this.env;
+    }
+    if (eff instanceof PUT_ENV) {
+      this.env = eff.root;
+      return;
+    }
+    if (eff instanceof LOOKUP) {
+      let cur = this.env;
+      for (let p of eff.path) {
+        if (typeof cur !== "object" || cur === null) return null;
+        cur = cur[p];
+      }
+      return cur;
+    }
+    if (eff instanceof SAFE_LOOKUP) {
+      let cur = this.env;
+      for (let p of eff.path) {
+        if (typeof cur !== "object" || cur === null)
+          throw `${eff.path.join("/")}not found!`;
+        cur = cur[p];
+      }
+      return cur;
+    }
+    if (eff instanceof UPDATE) {
+      if (!eff.path.length) throw "what do you want to update?";
+      let key = eff.path[eff.path.length - 1];
+      let cur = eff.root;
+      for (let p of eff.path.slice(0, -1)) {
+        if (typeof cur[p] !== "object" || cur[p] === null) {
+          cur[p] = {};
+        }
+        cur = cur[p];
+      }
+      cur[key] = eff.value;
+      return;
+    }
+    if (eff instanceof UPDATE_ROOT) {
+      if (!eff.path.length) throw "what do you want to update?";
+      let key = eff.path[eff.path.length - 1];
+      let cur = this.env;
+      for (let p of eff.path.slice(0, -1)) {
+        if (typeof cur[p] !== "object" || cur[p] === null) {
+          cur[p] = {};
+        }
+        cur = cur[p];
+      }
+      cur[key] = eff.value;
+      return;
+    }
+    throw eff;
+  }
 }
