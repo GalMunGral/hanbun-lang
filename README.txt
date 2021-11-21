@@ -56,7 +56,6 @@ Hanbun (漢文, 한문, かんぶん)
   其「display」「block」。
     「margin」「10px」。
 
-
   聞「click」而曰「
     夫「INITIALIZED」。不然。
       曰「吾欲「init」之。」
