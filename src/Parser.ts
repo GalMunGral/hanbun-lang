@@ -28,7 +28,7 @@ const r = (r: RegExp) =>
   });
 
 const ws = r(/\s*/);
-const period = r(/。/);
+const period = r(/\s*(。?)\s*/);
 const quoted = r(/(「|『).+?(」|』)/).map((r) => r.slice(1, -1));
 const self = r(/吾/).map(() => "__self__");
 const attrPath = r(/之/).apr(quoted).sep(ws);
@@ -54,23 +54,27 @@ const block = Parser.noop<Eff>().or(() =>
 const conditional = Parser.noop<Eff>()
   .or(() =>
     Parser.pure(COND)
-      .apl(r(/然。/))
+      .apl(r(/然/))
+      .apl(period)
       .apl(ws)
       .ap(block)
       .apl(ws)
-      .apl(r(/不然。/))
+      .apl(r(/不然/))
+      .apl(period)
       .apl(ws)
       .ap(block)
   )
   .or(() =>
     Parser.pure((alt: Eff) => COND(noop)(alt))
-      .apl(r(/不然。?/))
+      .apl(r(/不然/))
+      .apl(period)
       .apl(ws)
       .ap(block)
   )
   .or(() =>
     Parser.pure((cons: Eff) => COND(cons)(noop))
-      .apl(r(/然。?/))
+      .apl(r(/然/))
+      .apl(period)
       .apl(ws)
       .ap(block)
   );
@@ -82,7 +86,7 @@ const defineMethod = Parser.noop<Eff>().or(() =>
 const applyMethod = Parser.noop<Eff>()
   .or(() =>
     Parser.pure(SEND_MSG)
-      .apl(r(/望/))
+      .apl(r(/望彼?/))
       .ap(variablePath)
       .ap(quoted)
       .apl(r(/之?/))
@@ -98,21 +102,18 @@ const applyMethod = Parser.noop<Eff>()
 
 const loadVar = Parser.noop<Eff>().or(() =>
   Parser.pure(LOAD_VAR)
-    .apl(r(/吾?有彼/))
+    .apl(r(/吾?有彼?|夫/))
     .ap(variablePath)
     .apl(period)
 );
 
-const resetAndloadVar = Parser.noop<Eff>().or(() =>
-  Parser.pure(RST_VAR).apl(r(/夫/)).ap(variablePath).apl(period)
-);
+// const resetAndloadVar = Parser.noop<Eff>().or(() =>
+//   Parser.pure(RST_VAR).apl(r(/夫/)).ap(variablePath).apl(period)
+// );
 
 const loadConst = Parser.noop<Eff>()
   .or(() =>
-    Parser.pure(LOAD_CONST)
-      .apl(r(/有數曰/))
-      .ap(quoted.map(Number))
-      .apl(period)
+    Parser.pure(LOAD_CONST).apl(r(/有數/)).ap(quoted.map(Number)).apl(period)
   )
   .or(() =>
     Parser.pure(LOAD_CONST)
@@ -130,12 +131,12 @@ const evalExpression = Parser.noop<Eff>().or(() =>
 );
 
 const domNode = Parser.noop<Eff>().or(() =>
-  Parser.pure(NODE).apl(r(/有/)).ap(quoted).apl(period)
+  Parser.pure(NODE).apl(r(/有此/)).ap(quoted).apl(period)
 );
 
 const applyOperator = Parser.noop<Eff>().or(() =>
   Parser.pure(APPLY_OP)
-    .apl(r(/請/))
+    .apl(r(/請?/))
     .apl(ws)
     .ap(quoted)
     .apl(ws)
@@ -195,7 +196,7 @@ const setProperty = Parser.noop<Eff>()
     Parser.pure(SETP_VAL).apl(r(/其?/)).ap(quoted).ap(quoted).apl(period)
   );
 
-const setCursor = Parser.pure<Eff>(SET_CURSOR).apl(r(/内/));
+// const setCursor = Parser.pure<Eff>(SET_CURSOR).apl(r(/內/));
 
 const instruction = Parser.noop<Eff>()
   .or(() => block)
@@ -203,15 +204,15 @@ const instruction = Parser.noop<Eff>()
   .or(() => defineMethod)
   .or(() => applyMethod)
   .or(() => loadVar)
-  .or(() => resetAndloadVar)
+  // .or(() => resetAndloadVar)
   .or(() => loadConst)
   .or(() => evalExpression)
   .or(() => domNode)
   .or(() => applyOperator)
   .or(() => applyFunction)
   .or(() => storeVar)
-  .or(() => setProperty)
-  .or(() => setCursor);
+  .or(() => setProperty);
+// .or(() => setCursor);
 
 export const program = Parser.pure(sequence)
   .apl(ws)

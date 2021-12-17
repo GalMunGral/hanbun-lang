@@ -6,13 +6,13 @@
   "type": "module",
   "devDependencies": {
     "@types/node": "^16.4.12",
+    "prettier": "^2.5.1",
     "serve": "^12.0.0",
     "typescript": "^4.3.5"
   },
   "scripts": {
-    "start": "tsc && serve dist",
-    "test": "tsc && node --experimental-modules dist/hanbun-lang/__test__.js",
-    "test:vm": "tsc && node --experimental-modules dist/hanbun-lang/vm-fp/__test__.js"
+    "dev": "tsc --watch",
+    "format": "prettier --write src"
   },
   "repository": {
     "type": "git",

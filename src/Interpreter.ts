@@ -1,4 +1,4 @@
-import { Eff, Pure, eff, noop } from "./fp-helpers/Freer.js";
+import { Eff, Pure, eff, isEff, noop } from "./fp-helpers/Freer.js";
 import {
   run,
   ERROR,
@@ -38,7 +38,7 @@ export const HANDLE = (name: string) => (body: Eff<void>) =>
           ? eff(
               new UPDATE(target, ["on" + name], (e: Event) => {
                 e?.stopPropagation();
-                run(FUNC);
+                run(eff(new PUSH(e)).bind(() => FUNC));
               })
             )
           : noop
@@ -51,7 +51,9 @@ export const SEND_MSG = (path: string[]) => (method: string) =>
     .bind((target) =>
       typeof target[method] == "function"
         ? // built-in
-          eff(new PEEK()).bind((arg) => eff(new PUSH(target[method](arg))))
+          eff(new POP()).bind((arg) =>
+            eff(new PUSH(target[method](isEff(arg) ? () => run(arg) : arg)))
+          )
         : // user-defined
           (target[method] as Eff<any>)
     )
@@ -69,8 +71,22 @@ export const EVAL = (expr: string) => eff(new PUSH(eval(expr)));
 
 export const NODE = (type: string) =>
   eff(new LOOKUP(["__cursor__"])).bind((cursor: HTMLElement) => {
-    const node = document.createElement(type);
-    cursor?.append(node);
+    let node;
+    switch (type) {
+      case "svg":
+        node = document.createElementNS("http://www.w3.org/2000/svg", type);
+        node.setAttributeNS(
+          "http://www.w3.org/2000/xmlns/",
+          "xmlns:xlink",
+          "http://www.w3.org/1999/xlink"
+        );
+        break;
+      case "path":
+        node = document.createElementNS("http://www.w3.org/2000/svg", type);
+        break;
+      default:
+        node = document.createElement(type);
+    }
     return eff(new PUSH(node));
   });
 
@@ -80,7 +96,7 @@ export const APPLY_OP = (op: string) =>
       try {
         return eff(
           new PUSH(
-            eval(`${JSON.stringify(left)} ${op} ${JSON.stringify(right)}`)
+            eval(`(${JSON.stringify(left)}) ${op} (${JSON.stringify(right)})`)
           )
         );
       } catch (e: any) {
@@ -89,25 +105,17 @@ export const APPLY_OP = (op: string) =>
     })
   );
 
-export const APPLY_FUNC = (fn: string) =>
-  eff(new SAFE_LOOKUP([fn])).bind((f: Function) =>
-    eff(new POP()).bind((x) => {
-      try {
-        return eff(new PUSH(f(x)));
-      } catch (e: any) {
-        return eff(new ERROR(e.message));
-      }
-    })
-  );
+export const APPLY_FUNC = (fn: string) => SEND_MSG(["window"])(fn);
 
 export const STORE_VAR = (path: string[]) =>
-  eff(new PEEK()).bind((value) => eff(new UPDATE_ROOT(path, value)));
+  eff(new POP()).bind((value) => eff(new UPDATE_ROOT(path, value)));
 
 export const SETP_VAL = (name: string) => (value: any) =>
   eff(new PEEK()).bind((target) =>
     eff(new UPDATE(target, [name], value)).bind(() =>
-      target instanceof HTMLElement
-        ? eff(new UPDATE(target, ["style", name], value))
+      target instanceof Element
+        ? (target.setAttribute(name, value), // TODO
+          eff(new UPDATE(target, ["style", name], value)))
         : noop
     )
   );
@@ -116,8 +124,9 @@ export const SETP_VAR = (name: string) => (path: string[]) =>
   eff(new PEEK()).bind((target) =>
     eff(new SAFE_LOOKUP(path)).bind((value) =>
       eff(new UPDATE(target, [name], value)).bind(() =>
-        target instanceof HTMLElement
-          ? eff(new UPDATE(target, ["style", name], value))
+        target instanceof Element
+          ? (target.setAttribute(name, value), // TODO
+            eff(new UPDATE(target, ["style", name], value)))
           : noop
       )
     )

@@ -28,6 +28,10 @@ export class Impure<F = any, A = any, B = any> {
 }
 
 export type Eff<T = any> = Pure<T> | Impure<any, any, T>;
+export function isEff(o: any): o is Eff {
+  return o instanceof Pure || o instanceof Impure;
+}
+
 export const noop = new Pure(null);
 export function eff<F>(e: F) {
   return new Impure(new Functor(e, (x) => new Pure(x)));
