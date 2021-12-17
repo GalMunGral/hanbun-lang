@@ -1,5 +1,6 @@
 // F really should be F<_>, i.e. a kind-2 type,
 // which doesn't exist in TS yet.
+
 export class Functor<F = any, A = any, B = any> {
   constructor(public eff: F, public cont: (_: A) => B) {}
   public map<C>(f: (_: B) => C): Functor<F, A, C> {
@@ -28,11 +29,11 @@ export class Impure<F = any, A = any, B = any> {
 }
 
 export type Eff<T = any> = Pure<T> | Impure<any, any, T>;
+
 export function isEff(o: any): o is Eff {
   return o instanceof Pure || o instanceof Impure;
 }
 
-export const noop = new Pure(null);
 export function eff<F>(e: F) {
   return new Impure(new Functor(e, (x) => new Pure(x)));
 }

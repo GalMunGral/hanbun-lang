@@ -1,137 +1,154 @@
-import { Eff, Pure, eff, isEff, noop } from "./fp-helpers/Freer.js";
-import {
-  run,
-  ERROR,
-  RESET,
-  PEEK,
-  POP,
-  PUSH,
-  GET_ENV,
-  PUT_ENV,
-  LOOKUP,
-  SAFE_LOOKUP,
-  UPDATE,
-  UPDATE_ROOT,
-} from "./VM.js";
+import { Eff, Pure } from "./fp-helpers/Freer.js";
 
-export const COND = (cons: Eff<void>) => (alt: Eff<void>) =>
-  eff(new POP()).bind((v) => (Boolean(v) ? cons : alt));
+export class NOOP {}
+export class ERROR {
+  constructor(public message: string) {}
+}
+export class PEEK {}
+export class POP {}
+export class PUSH {
+  constructor(public val: any) {}
+}
+export class BINOP {
+  constructor(public op: string, public left: any, public right: any) {}
+}
+export class GET_ENV {}
+export class PUT_ENV {
+  constructor(public root: any) {}
+}
+export class LOOKUP {
+  constructor(public path: string[]) {}
+}
+export class SAFE_LOOKUP {
+  constructor(public path: string[]) {}
+}
+export class UPDATE {
+  constructor(public root: any, public path: string[], public value: any) {}
+}
+export class UPDATE_ROOT {
+  constructor(public path: string[], public value: any) {}
+}
 
-export const HANDLE = (name: string) => (body: Eff<void>) =>
-  eff(new PEEK()).bind((target) =>
-    new Pure(
-      eff(new GET_ENV()).bind((oldEnv) =>
-        eff(
-          new PUT_ENV({
-            __proto__: oldEnv,
-            __self__: target,
-            document: window.document,
-            window: window,
-          })
-        )
-          .bind(() => body)
-          .bind(() => eff(new PUT_ENV(oldEnv)))
-      )
-    ).bind((FUNC: Eff<any>) =>
-      eff(new UPDATE(target, [name], FUNC)).bind(() =>
-        target instanceof EventTarget
-          ? eff(
-              new UPDATE(target, ["on" + name], (e: Event) => {
-                e?.stopPropagation();
-                run(eff(new PUSH(e)).bind(() => FUNC));
-              })
-            )
-          : noop
-      )
-    )
-  );
+export function RUN(m: Eff<any>) {
+  new Instance().run(m);
+}
 
-export const SEND_MSG = (path: string[]) => (method: string) =>
-  eff(new SAFE_LOOKUP(path))
-    .bind((target) =>
-      typeof target[method] == "function"
-        ? // built-in
-          eff(new POP()).bind((arg) =>
-            eff(new PUSH(target[method](isEff(arg) ? () => run(arg) : arg)))
-          )
-        : // user-defined
-          (target[method] as Eff<any>)
-    )
-    .bind(() => eff(new PEEK()));
+export class Instance {
+  private stack: any[] = [];
+  private env: any = window;
 
-export const LOAD_VAR = (path: string[]) =>
-  eff(new SAFE_LOOKUP(path)).bind((v) => eff(new PUSH(v)));
+  public run(m: Eff<any>) {
+    if (m instanceof Pure) return;
+    const { eff, cont } = m.functor;
+    this.run(cont(this.handle(eff)));
+  }
 
-export const RST_VAR = (path: string[]) =>
-  eff(new RESET()).bind(() => LOAD_VAR(path));
-
-export const LOAD_CONST = (literal: any) => eff(new PUSH(literal));
-
-export const EVAL = (expr: string) => eff(new PUSH(eval(expr)));
-
-export const NODE = (type: string) =>
-  eff(new LOOKUP(["__cursor__"])).bind((cursor: HTMLElement) => {
-    let node;
-    switch (type) {
-      case "svg":
-        node = document.createElementNS("http://www.w3.org/2000/svg", type);
-        node.setAttributeNS(
-          "http://www.w3.org/2000/xmlns/",
-          "xmlns:xlink",
-          "http://www.w3.org/1999/xlink"
-        );
-        break;
-      case "path":
-        node = document.createElementNS("http://www.w3.org/2000/svg", type);
-        break;
-      default:
-        node = document.createElement(type);
+  private handle(
+    eff:
+      | ERROR
+      | PEEK
+      | POP
+      | PUSH
+      | BINOP
+      | GET_ENV
+      | PUT_ENV
+      | LOOKUP
+      | SAFE_LOOKUP
+      | UPDATE
+      | UPDATE_ROOT
+  ): any {
+    if (eff == NOOP) return;
+    if (eff instanceof ERROR) {
+      throw eff.message;
     }
-    return eff(new PUSH(node));
-  });
-
-export const APPLY_OP = (op: string) =>
-  eff(new POP()).bind((right) =>
-    eff(new POP()).bind((left) => {
-      try {
-        return eff(
-          new PUSH(
-            eval(`(${JSON.stringify(left)}) ${op} (${JSON.stringify(right)})`)
-          )
-        );
-      } catch (e: any) {
-        return eff(new ERROR(e.message));
+    if (eff instanceof POP) {
+      return this.stack.pop();
+    }
+    if (eff instanceof PEEK) {
+      if (!this.stack.length) throw "nothing on stack!";
+      return this.stack[this.stack.length - 1];
+    }
+    if (eff instanceof PUSH) {
+      this.stack.push(eff.val);
+      return;
+    }
+    if (eff instanceof BINOP) {
+      switch (eff.op) {
+        case "<":
+          return eff.left < eff.right;
+        case "<=":
+          return eff.left <= eff.right;
+        case ">":
+          return eff.left > eff.right;
+        case ">=":
+          return eff.left >= eff.right;
+        case "==":
+          return eff.left === eff.right;
+        case "+":
+          return eff.left + eff.right;
+        case "-":
+          return eff.left - eff.right;
+        case "*":
+          return eff.left * eff.right;
+        case "/":
+          return eff.left / eff.right;
+        case "**":
+          return eff.left ** eff.right;
+        default:
+          console.log("yo");
+          throw "Operation Not Supported";
       }
-    })
-  );
-
-export const APPLY_FUNC = (fn: string) => SEND_MSG(["window"])(fn);
-
-export const STORE_VAR = (path: string[]) =>
-  eff(new POP()).bind((value) => eff(new UPDATE_ROOT(path, value)));
-
-export const SETP_VAL = (name: string) => (value: any) =>
-  eff(new PEEK()).bind((target) =>
-    eff(new UPDATE(target, [name], value)).bind(() =>
-      target instanceof Element
-        ? (target.setAttribute(name, value), // TODO
-          eff(new UPDATE(target, ["style", name], value)))
-        : noop
-    )
-  );
-
-export const SETP_VAR = (name: string) => (path: string[]) =>
-  eff(new PEEK()).bind((target) =>
-    eff(new SAFE_LOOKUP(path)).bind((value) =>
-      eff(new UPDATE(target, [name], value)).bind(() =>
-        target instanceof Element
-          ? (target.setAttribute(name, value), // TODO
-            eff(new UPDATE(target, ["style", name], value)))
-          : noop
-      )
-    )
-  );
-
-export const SET_CURSOR = eff(new PEEK()).bind((value) =>
-  eff(new UPDATE_ROOT(["__cursor__"], value))
-);
+    }
+    if (eff instanceof GET_ENV) {
+      return this.env;
+    }
+    if (eff instanceof PUT_ENV) {
+      this.env = eff.root;
+      return;
+    }
+    if (eff instanceof LOOKUP) {
+      let cur = this.env;
+      for (let p of eff.path) {
+        if (typeof cur !== "object" || cur === null) return null;
+        cur = cur[p];
+      }
+      return cur;
+    }
+    if (eff instanceof SAFE_LOOKUP) {
+      let cur = this.env;
+      for (let p of eff.path) {
+        if (typeof cur !== "object" || cur === null)
+          throw `${eff.path.join("/")}not found!`;
+        cur = cur[p];
+      }
+      return cur;
+    }
+    if (eff instanceof UPDATE) {
+      if (!eff.path.length) throw "what do you want to update?";
+      let key = eff.path[eff.path.length - 1];
+      let cur = eff.root;
+      for (let p of eff.path.slice(0, -1)) {
+        if (typeof cur[p] !== "object" || cur[p] === null) {
+          cur[p] = {};
+        }
+        cur = cur[p];
+      }
+      cur[key] = eff.value;
+      return;
+    }
+    if (eff instanceof UPDATE_ROOT) {
+      if (!eff.path.length) throw "what do you want to update?";
+      let key = eff.path[eff.path.length - 1];
+      let cur = this.env;
+      for (let p of eff.path.slice(0, -1)) {
+        if (typeof cur[p] !== "object" || cur[p] === null) {
+          cur[p] = {};
+        }
+        cur = cur[p];
+      }
+      cur[key] = eff.value;
+      return;
+    }
+    throw eff;
+  }
+}

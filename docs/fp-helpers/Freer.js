@@ -38,7 +38,6 @@ export class Impure {
 export function isEff(o) {
     return o instanceof Pure || o instanceof Impure;
 }
-export const noop = new Pure(null);
 export function eff(e) {
     return new Impure(new Functor(e, (x) => new Pure(x)));
 }

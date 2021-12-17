@@ -5,7 +5,9 @@ export class ERROR {
         this.message = message;
     }
 }
-export class RESET {
+export class PEEK {
+}
+export class POP {
 }
 export class PUSH {
     val;
@@ -13,9 +15,15 @@ export class PUSH {
         this.val = val;
     }
 }
-export class PEEK {
-}
-export class POP {
+export class BINOP {
+    op;
+    left;
+    right;
+    constructor(op, left, right) {
+        this.op = op;
+        this.left = left;
+        this.right = right;
+    }
 }
 export class GET_ENV {
 }
@@ -55,7 +63,7 @@ export class UPDATE_ROOT {
         this.value = value;
     }
 }
-export function run(m) {
+export function RUN(m) {
     new Instance().run(m);
 }
 export class Instance {
@@ -71,14 +79,6 @@ export class Instance {
         if (eff instanceof ERROR) {
             throw eff.message;
         }
-        if (eff instanceof RESET) {
-            this.stack = [];
-            return;
-        }
-        if (eff instanceof PUSH) {
-            this.stack.push(eff.val);
-            return;
-        }
         if (eff instanceof POP) {
             return this.stack.pop();
         }
@@ -86,6 +86,37 @@ export class Instance {
             if (!this.stack.length)
                 throw "nothing on stack!";
             return this.stack[this.stack.length - 1];
+        }
+        if (eff instanceof PUSH) {
+            this.stack.push(eff.val);
+            return;
+        }
+        if (eff instanceof BINOP) {
+            switch (eff.op) {
+                case "<":
+                    return eff.left < eff.right;
+                case "<=":
+                    return eff.left <= eff.right;
+                case ">":
+                    return eff.left > eff.right;
+                case ">=":
+                    return eff.left >= eff.right;
+                case "==":
+                    return eff.left === eff.right;
+                case "+":
+                    return eff.left + eff.right;
+                case "-":
+                    return eff.left - eff.right;
+                case "*":
+                    return eff.left * eff.right;
+                case "/":
+                    return eff.left / eff.right;
+                case "**":
+                    return eff.left ** eff.right;
+                default:
+                    console.log("yo");
+                    throw "Operation Not Supported";
+            }
         }
         if (eff instanceof GET_ENV) {
             return this.env;
