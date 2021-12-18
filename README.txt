@@ -10,8 +10,8 @@ Hanbun (漢文, 한문, かんぶん)
 <block> ::=  曰「<stmt>{<ws><stmt>}」
 <cond> ::= 然<block>[不然<block>] | 不然<block>
 <node> ::= 有此<quote>
-<set-mem-val> ::= 其<quote>者<ws><quote>也 | 其<quote><quote>
-<set-mem-var> ::= 其<quote>者<ws>彼<path>也
+<set-mem-val> ::= 其<quote>也<quote>也 | 其<quote><quote>
+<set-mem-var> ::= 其<quote>者彼<path>也
 <msg-def> ::= 聞<quote>則答曰<block>
 <msg-send> ::= 願[彼]<path><quote>[之] | 彼<path>其<quote>者何 |
                吾欲<quote>[之] | 吾當<quote>[之] | 請<quote>[之]
