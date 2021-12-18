@@ -1,6 +1,7 @@
 import { RUN } from "./Interpreter.js";
 import { program } from "./Parser.js";
 export function interpret(script) {
+    console.log("hey", program.parse(script));
     program.map(RUN).parse(script);
 }
 window["debug"] = interpret;

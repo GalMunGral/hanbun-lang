@@ -75,7 +75,10 @@ export class Instance {
         if (m instanceof Pure)
             return;
         const { eff, cont } = m.functor;
-        this.run(cont(this.handle(eff)));
+        const res = this.handle(eff);
+        // console.log(Object.getPrototypeOf(eff).constructor.name, eff, res);
+        // console.log("stack", ...this.stack);
+        this.run(cont(res));
     }
     handle(eff) {
         if (eff == NOOP)

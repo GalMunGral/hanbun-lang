@@ -41,18 +41,13 @@ function sequence(actions: Eff[]): Eff {
 
 const LoadValue = Parser.noop<Eff>()
   .or(() =>
-    Parser.pure(LOAD_VAL).apl(r(/有數/)).ap(quoted.map(Number)).apl(period)
+    Parser.pure(LOAD_VAL).apl(r(/有|以/)).ap(quoted.map(Number)).apl(period)
   )
-  .or(() =>
-    Parser.pure(LOAD_VAL)
-      .apl(r(/有言曰/))
-      .ap(quoted)
-      .apl(period)
-  );
+  .or(() => Parser.pure(LOAD_VAL).apl(r(/有言/)).ap(quoted).apl(period));
 
 const LoadVariable = Parser.noop<Eff>().or(() =>
   Parser.pure(LOAD_VAR)
-    .apl(r(/吾?有彼?|夫/))
+    .apl(r(/(取|夫)(其|彼)?/))
     .ap(variablePath)
     .apl(period)
 );
@@ -64,25 +59,22 @@ const Operate = Parser.noop<Eff>().or(() =>
 const StoreVariable = Parser.noop<Eff>()
   .or(() =>
     Parser.pure(STORE_VAR)
-      .apl(r(/彼?/))
+      .apl(r(/今/))
       .ap(variablePath)
-      .apl(r(/當如是/))
+      .apl(r(/如是|亦然/))
       .apl(period)
   )
   .or(() =>
-    Parser.pure(STORE_VAR)
-      .apl(r(/是為|或曰/))
-      .ap(variablePath)
-      .apl(period)
+    Parser.pure(STORE_VAR).apl(r(/是?謂/)).ap(variablePath).apl(period)
   );
 
 const Block = Parser.noop<Eff>().or(() =>
   Parser.pure(sequence)
-    .apl(r(/曰(「|『)/))
+    .apl(r(/「|『/))
     .apl(ws)
     .ap(instruction.sep(ws))
     .apl(ws)
-    .apl(r(/(」|』)/))
+    .apl(r(/」|』/))
 );
 
 const Conditional = Parser.noop<Eff>()
@@ -123,7 +115,6 @@ const SetMember = Parser.noop<Eff>()
       .apl(r(/其/))
       .ap(quoted)
       .apl(r(/者/))
-      .apl(period)
       .apl(ws)
       .apl(r(/彼/))
       .ap(variablePath)
@@ -134,46 +125,53 @@ const SetMember = Parser.noop<Eff>()
     Parser.pure(SET_MEM_VAL)
       .apl(r(/其/))
       .ap(quoted)
-      .apl(r(/者/))
-      .apl(period)
+      .apl(r(/也?/))
       .apl(ws)
       .ap(quoted)
-      .apl(r(/也/))
       .apl(period)
-  )
-  .or(() =>
-    Parser.pure(SET_MEM_VAL).apl(r(/其/)).ap(quoted).ap(quoted).apl(period)
   );
 
 const MessageDefinition = Parser.noop<Eff>().or(() =>
-  Parser.pure(MSG_DEF).apl(r(/聞/)).ap(quoted).apl(r(/而/)).ap(Block)
+  Parser.pure(MSG_DEF)
+    .apl(r(/聞/))
+    .ap(quoted)
+    .apl(r(/則答曰/))
+    .ap(Block)
 );
 
 const MessageSend = Parser.noop<Eff>()
   .or(() =>
     Parser.pure(MSG_SEND)
-      .apl(r(/望彼?/))
+      .apl(r(/願彼?/))
       .ap(variablePath)
       .ap(quoted)
       .apl(r(/之/))
       .apl(period)
   )
   .or(() =>
+    Parser.pure(MSG_SEND)
+      .apl(r(/彼/))
+      .ap(variablePath)
+      .apl(r(/其/))
+      .ap(quoted)
+      .apl(r(/者何/))
+      .apl(period)
+  )
+  .or(() =>
     Parser.pure(MSG_SEND(["__self__"]))
-      .apl(r(/吾欲/))
+      .apl(r(/吾(欲|當)/))
+      .ap(quoted)
+      .apl(r(/之?/))
+      .apl(period)
+  )
+  .or(() =>
+    Parser.pure(MSG_SEND(["window"]))
+      .apl(r(/請/))
+      .apl(ws)
       .ap(quoted)
       .apl(r(/之/))
       .apl(period)
   );
-
-const FunctionalCall = Parser.noop<Eff>().or(() =>
-  Parser.pure(MSG_SEND(["window"]))
-    .apl(r(/請/))
-    .apl(ws)
-    .ap(quoted)
-    .apl(r(/之/))
-    .apl(period)
-);
 
 const instruction = Parser.noop<Eff>()
   .or(() => Block)
@@ -184,7 +182,6 @@ const instruction = Parser.noop<Eff>()
   .or(() => LoadValue)
   .or(() => NewNode)
   .or(() => Operate)
-  .or(() => FunctionalCall)
   .or(() => StoreVariable)
   .or(() => SetMember);
 

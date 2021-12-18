@@ -40,7 +40,10 @@ export class Instance {
   public run(m: Eff<any>) {
     if (m instanceof Pure) return;
     const { eff, cont } = m.functor;
-    this.run(cont(this.handle(eff)));
+    const res = this.handle(eff);
+    // console.log(Object.getPrototypeOf(eff).constructor.name, eff, res);
+    // console.log("stack", ...this.stack);
+    this.run(cont(res));
   }
 
   private handle(
