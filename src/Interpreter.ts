@@ -40,10 +40,7 @@ export class Instance {
   public run(m: Eff<any>) {
     if (m instanceof Pure) return;
     const { eff, cont } = m.functor;
-    const res = this.handle(eff);
-    // console.log(Object.getPrototypeOf(eff).constructor.name, eff, res);
-    // console.log("stack", ...this.stack);
-    this.run(cont(res));
+    this.run(cont(this.handle(eff)));
   }
 
   private handle(
@@ -98,7 +95,6 @@ export class Instance {
         case "**":
           return eff.left ** eff.right;
         default:
-          console.log("yo");
           throw "Operation Not Supported";
       }
     }

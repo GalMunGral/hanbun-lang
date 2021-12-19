@@ -2,7 +2,6 @@ import { RUN } from "./Interpreter.js";
 import { program } from "./Parser.js";
 
 export function interpret(script: string) {
-  console.log("hey", program.parse(script));
   program.map(RUN).parse(script);
 }
 

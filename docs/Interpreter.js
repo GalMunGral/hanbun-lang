@@ -75,10 +75,7 @@ export class Instance {
         if (m instanceof Pure)
             return;
         const { eff, cont } = m.functor;
-        const res = this.handle(eff);
-        // console.log(Object.getPrototypeOf(eff).constructor.name, eff, res);
-        // console.log("stack", ...this.stack);
-        this.run(cont(res));
+        this.run(cont(this.handle(eff)));
     }
     handle(eff) {
         if (eff == NOOP)
@@ -121,7 +118,6 @@ export class Instance {
                 case "**":
                     return eff.left ** eff.right;
                 default:
-                    console.log("yo");
                     throw "Operation Not Supported";
             }
         }
