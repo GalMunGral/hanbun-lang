@@ -25,9 +25,14 @@ instance effApply :: Apply (Eff e a) where
     apply (Impure fa) b = Impure $ map (flip apply b) fa
     apply a (Impure fb) = Impure $ map (apply a) fb
 
-instance effMonad :: Bind (Eff e a) where
+instance effBind :: Bind (Eff e a) where
     bind (Pure b) f = f b
     bind (Impure fb) f = Impure $ map (flip bind f) fb
+
+instance effApplicative :: Applicative (Eff e a) where
+    pure a = Pure a
+
+instance effMonad :: Monad (Eff e a)
 
 eff :: forall e a. e -> Eff e a a
 eff e = Impure (Ff e Pure)

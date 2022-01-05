@@ -8,5 +8,8 @@ import Machine (Instruction(..), execute)
  
 main :: Effect Unit
 main = do
-    _ <- run execute (eff Peek)
+    _ <- run execute do
+      eff Peek
+      eff $ Pop
+      
     pure unit
