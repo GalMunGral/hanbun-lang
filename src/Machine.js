@@ -1,20 +1,28 @@
 var stack = [];
 var context = [globalThis];
 
-exports.test = (left, right) => {
-  if (!stack.length)
-    return left('stack is empty');
-  return right(Boolean(stack.pop()));
+globalThis.log = (arg) => console.log(arg);
+
+exports.debug = (next) => {
+  console.log(stack);
+  console.log(context);
+  return next();
 }
 
-exports.pushVal = (json, left, right) => {
+exports.select = (branch1, branch2) => {
+  if (!stack.length)
+    return left('stack is empty');
+  return stack.pop() ? branch1() : branch2();
+}
+
+exports.loadVal = (json, left, right) => {
   return makeVal(json, left, (val) => {
     stack.push(val);
     return right();
   });
 }
 
-exports.pushRef = (path, left, right) => {
+exports.loadRef = (path, left, right) => {
   return lookup(path, left, (val) => {
     stack.push(val);
     return right();
@@ -35,7 +43,7 @@ exports.binOp = (op, left, right) => {
   const rVal = stack.pop();
   try {
     switch (op) {
-      case "<": 
+      case "<":
         stack.push(lVal < rVal);
         return right();
       case "<=":
@@ -63,7 +71,9 @@ exports.binOp = (op, left, right) => {
         stack.push(lVal / rVal);
         return right();
       case "**":
-        stack.push(lVal ** rVal);
+        let res = 1;
+        for (let i = 0; i < rVal; ++i) res *= lVal
+        stack.push(res);
         return right();
       default:
         return left('operation not supported')
@@ -72,20 +82,6 @@ exports.binOp = (op, left, right) => {
     return left(e.message);
   }
 }
-
-exports.newContext = (target) => {
-  context.push({
-    __proto__: context[context.length - 1],
-    __self__: target,
-    document: globalThis.document,
-    window: globalThis,
-  });
-}
-
-exports.restoreContext = () => {
-  context.pop();
-}
-
 
 exports.store = (path, left, right) => {
   if (!stack.length)
@@ -103,31 +99,102 @@ exports.setVal = (path, json, left, right) => {
   })
 }
 
-exports.setRef = (path, path, left, right) => {
+exports.setRef = (path, ref, left, right) => {
   if (!stack.length)
     return left("stack is empty");
-  return lookup(path, left, (val) => {
+  return lookup(ref, left, (val) => {
     return update(stack[stack.length - 1], path, val, left, right);
   })
 }
 
+exports.makeNode = (tag, left, right) => {
+  try {
+    let node;
+    switch (tag) {
+      case "svg":
+        node = document.createElementNS("http://www.w3.org/2000/svg", tag);
+        node.setAttributeNS(
+          "http://www.w3.org/2000/xmlns/",
+          "xmlns:xlink",
+          "http://www.w3.org/1999/xlink"
+        );
+        break;
+      default:
+        node = document.createElement(tag);
+    }
+    stack.push(node);
+    return right();
+  } catch (e) {
+    stack.push({ tag })
+    return right();
+  }
+}
+
+exports.register = (message, fn, left, right) => {
+  if (!stack.length) return left('stack is empty');
+  const target = stack[stack.length - 1];
+  const handler = (arg) => { // handler.length == 1
+    const index = stack.length;
+    context.push({ this : target });
+    stack.push(arg);
+    fn.call();
+    const res = stack[index];
+    stack.length = index;
+    context.pop();
+    return res;
+  }
+  target[message] = target['on' + message] = handler;
+  return right();
+}
+
+exports.call = (path, message, left, right) => {
+  return lookup(path, left, (target) => {
+    const fn = target[message];
+    if (typeof fn != 'function') {
+      return left(`${path}::${message} is not callable`);
+    }
+    if (stack.length < fn.length) {
+      return left(`not enough arguments`);
+    }
+    const args = [];
+    for (let i = 0; i < fn.length; ++i) {
+      args.unshift(stack.pop());
+    }
+    try {
+      stack.push(fn.apply(target, args));
+      return right();
+    } catch (e) {
+      return left(e.message);
+    }
+  })
+} 
 
 function lookup(path, left, right) {
-  let cur = context[context.length - 1];
+  return lookupFrom(context[context.length - 1], path, left, right);
+}
+
+function lookupFrom(context, path, left, right) {
+  let cur = context;
   for (let p of path) {
-    if (typeof cur !== "object" || cur === null)
-      return left(`${eff.path.join("/")}not found!`);
+    if (!indexable(cur)) {
+      if (context === globalThis) {
+        return left(`${path.join("/")} not found!`);
+      } else {
+        return lookupFrom(globalThis, path, left, right);
+      }
+    }
     cur = cur[p];
   }
-  return right(cur);
+  return cur === undefined
+    ? lookupFrom(globalThis, path, left, right)
+    : right(cur);
 }
 
 function update(cur, path, value, left, right) {
-  if (!path.length)
-    return left("path must be specified");
+  if (!path.length) return left("path must be specified");
   const key = path.pop();
   for (let p of path) {
-    if (typeof cur[p] !== "object" || cur[p] === null) {
+    if (!indexable(cur[p])) {
       cur[p] = {};
     }
     cur = cur[p];
@@ -142,4 +209,8 @@ function makeVal(json, left, right) {
   } catch (e) {
     return left(e.message);
   }
+}
+
+function indexable(o) {
+  return typeof o == 'function' || (typeof o == 'object' && o);
 }

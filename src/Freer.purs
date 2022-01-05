@@ -37,7 +37,7 @@ instance effMonad :: Monad (Eff e a)
 eff :: forall e a. e -> Eff e a a
 eff e = Impure (Ff e Pure)
 
-run :: forall e a b m. Monad m => (e -> m a) -> Eff e a b -> m b
+run :: forall e a b m. (Monad m) => (e -> m a) -> Eff e a b -> m b
 run _ (Pure b) = pure b
 run f (Impure (Ff e g)) = f e >>= \a -> run f (g a)
 
