@@ -9,11 +9,9 @@ import Control.Monad.Except (runExceptT)
 import Control.Monad.State (StateT, get, put, runStateT)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
-import Data.Newtype (overF)
 import Effect (Effect)
 import Effect.Class.Console (log)
 import Foreign (Foreign, readUndefined)
-import Math (e)
 
 foreign import getPath :: forall a. Array String -> Foreign
 
