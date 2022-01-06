@@ -1,7 +1,6 @@
 {
-  "name": "parser-combinator-tutorial",
+  "name": "hanbun-lang",
   "version": "1.0.0",
-  "description": "",
   "devDependencies": {
     "parcel": "^2.1.0",
     "purty": "^7.0.0",
@@ -11,14 +10,6 @@
     "build": "spago build && parcel build src/demo/index.html --dist-dir docs --public-url hanbun-lang",
     "format": "for f in src/*.purs; do purty --write $f; done && prettier --write src"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/GalMunGral/parser-combinator-tutorial.git"
-  },
-  "author": "Winnie",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/GalMunGral/parser-combinator-tutorial/issues"
-  },
-  "homepage": "https://github.com/GalMunGral/parser-combinator-tutorial#readme"
+  "author": "Wenqi He",
+  "license": "ISC"
 }
