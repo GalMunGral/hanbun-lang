@@ -2,19 +2,23 @@ module Freer where
 
 import Prelude
 
-data Ff e a b = Ff (e) (a -> b)
+import Data.Either (Either(..))
+import Effect.Class.Console (log, logShow)
+import Effect.Unsafe (unsafePerformEffect)
 
-instance showFf :: Show e => Show (Ff e a b) where
-    show (Ff e _) = "Ff{ " <> show e <> " }"
+data F e a b = F (e) (a -> b)
 
-instance functorFf :: Functor (Ff e a) where
-    map f (Ff e g) = Ff e (g >>> f)
+instance showF :: Show e => Show (F e a b) where
+    show (F e _) = "F(" <> show e <> ")"
 
-data Eff e a b =  Pure b | Impure (Ff e a (Eff e a b))
+instance functorF :: Functor (F e a) where
+    map f (F e g) = F e (g >>> f)
+
+data Eff e a b =  Pure b | Impure (F e a (Eff e a b))
 
 instance showEff :: (Show e, Show b) => Show (Eff e a b) where
-    show (Pure b) = "Pure{ " <> show b <> " }"
-    show (Impure fb) = "Impure{ " <> show fb <> " }"
+    show (Pure b) = "Pure(" <> show b <> ")"
+    show (Impure fb) = "Impure(" <> show fb <> ")"
 
 instance effFunctor :: Functor (Eff e a) where
     map f (Pure b) = Pure $ f b
@@ -35,9 +39,11 @@ instance effApplicative :: Applicative (Eff e a) where
 instance effMonad :: Monad (Eff e a)
 
 eff :: forall e a. e -> Eff e a a
-eff e = Impure (Ff e Pure)
+eff e = Impure (F e Pure)
 
-run :: forall e a b m. (Monad m) => (e -> m a) -> Eff e a b -> m b
-run _ (Pure b) = pure b
-run f (Impure (Ff e g)) = f e >>= \a -> run f (g a)
+unsafeRun :: forall e a b. Show e => (e -> Either String a) -> Eff e a b -> Either String b
+unsafeRun _ (Pure b) = pure b
+unsafeRun f (Impure (F e g)) = case f e of
+    (Left err) -> Left $ const "ERROR" $ unsafePerformEffect $ logShow err
+    (Right a) -> unsafeRun f (g a)
 

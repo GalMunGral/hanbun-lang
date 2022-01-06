@@ -3,7 +3,5 @@ node_modules/
 .purs-repl
 .psc-ide-port
 output
-dist/*
-
-!dist/index.html
+.parcel-cache/
 .DS_Store

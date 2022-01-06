@@ -2,7 +2,6 @@
   "name": "parser-combinator-tutorial",
   "version": "1.0.0",
   "description": "",
-  "main": "index.ts",
   "devDependencies": {
     "@types/node": "^16.4.12",
     "prettier": "^2.5.1",
@@ -10,9 +9,7 @@
     "typescript": "^4.3.5"
   },
   "scripts": {
-    "dev": "tsc --watch --outDir docs",
-    "build": "tsc",
-    "format": "prettier --write src"
+    "build": "spago build && parcel build src/demo/index.html --dist-dir demo"
   },
   "repository": {
     "type": "git",
@@ -23,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/GalMunGral/parser-combinator-tutorial/issues"
   },
-  "homepage": "https://github.com/GalMunGral/parser-combinator-tutorial#readme"
+  "homepage": "https://github.com/GalMunGral/parser-combinator-tutorial#readme",
+  "dependencies": {
+    "parcel": "^2.1.0"
+  }
 }

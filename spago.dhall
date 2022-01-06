@@ -17,10 +17,12 @@ to generate this file without the comments in this block.
   , "control"
   , "effect"
   , "either"
+  , "foldable-traversable"
   , "foreign"
   , "foreign-object"
   , "free"
   , "functions"
+  , "integers"
   , "math"
   , "maybe"
   , "newtype"
@@ -29,6 +31,8 @@ to generate this file without the comments in this block.
   , "strings"
   , "transformers"
   , "typelevel-prelude"
+  , "web-dom"
+  , "web-html"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]

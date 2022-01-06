@@ -2,7 +2,7 @@ module Parser where
 
 import Prelude
 
-import Control.Alternative (class Alt)
+import Control.Alternative (class Alt, (<|>))
 import Data.Array ((!!), (:))
 import Data.Array.NonEmpty (toArray)
 import Data.Array.NonEmpty.Internal (NonEmptyArray(..))
@@ -52,6 +52,15 @@ instance parserAlternative :: Alt Parser where
             (Err _ _) -> b.runParser s
     }
 
+altLazy :: forall a. Parser a -> (Unit -> Parser a) -> Parser a
+altLazy (Parser a) thunk = Parser { 
+    runParser: \s -> case a.runParser s of
+        (Ok u next) -> Ok u next
+        (Err _ _) -> runParser (thunk unit) s
+}
+
+infixl 3 altLazy as <||>
+
 instance parserApply :: Apply Parser where
     apply (Parser a) (Parser b) = Parser {
         runParser: \s -> case a.runParser s of
@@ -73,20 +82,21 @@ repeat (Parser a) =  Parser {
                 where rest = repeat $ Parser a
 }
 
-sepBy :: forall a b. Parser a -> Parser b -> Parser (Array a)
+sepBy :: forall a b. Parser a -> Parser b -> Parser (Array b)
 sepBy (Parser a) (Parser b) =  Parser {
-    runParser: \s -> let res = a.runParser s in
+    runParser: \s -> let res = b.runParser s in
         case res of
             (Err _ _) -> Ok [] s
             (Ok _ s') -> (:) <$> res <*> runParser rest s' 
-                where rest = repeat $ Parser b *> Parser a
+                where rest = repeat $ Parser a *> Parser b
 }
 
-regexParser :: String -> Parser String
-regexParser rs = let r = unsafeRegex ("^" <> rs) noFlags in
+re :: String -> Parser String
+re rs = let pattern = unsafeRegex ("^" <> rs) noFlags in
     Parser {
         runParser: \s -> 
-            case match r s >>= \a -> join $ (toArray a) !! 0 of
+            case match pattern s >>= \a -> join $ (toArray a) !! 0 of
                 (Just token) -> Ok token $ drop (length token) s
                 Nothing -> Err "Failed to parse" s
     }
+

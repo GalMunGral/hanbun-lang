@@ -3,185 +3,87 @@ module Syntax where
 import Prelude
 
 import Control.Alt (class Alt, (<|>))
-import Data.Array ((:))
-import Data.Maybe (fromMaybe)
+import Data.Array ((:), (!!))
+import Data.Array.NonEmpty (toArray)
+import Data.Int (fromString)
+import Data.Maybe (Maybe(..), fromMaybe)
+import Data.String (drop, length)
 import Data.String.CodeUnits (slice)
-import Parser (Parser(..), regexParser, sepBy)
-
+import Data.String.Regex (match, regex)
+import Data.String.Regex.Flags (noFlags)
+import Data.String.Regex.Unsafe (unsafeRegex)
+import Data.Traversable (sequence)
+import Freer (eff)
+import Machine (Block, Instruction(..), loadVal, setRef)
+import Parser (Parser(..), Res(..), noop, re, sepBy, (<||>))
 
 ws :: Parser String
-ws = regexParser """\s*"""
+ws = re """\s*"""
 
 period :: Parser String
-period = regexParser """\s*(。?)\s*"""
+period = re """\s*(。?)\s*"""
 
-quote :: Parser String
-quote = fromMaybe "" <<< slice 1 (-1) <$> regexParser """(「|『).+?(」|』)"""
+identifier :: Parser String
+identifier = fromMaybe "" <<< slice 1 (-1) <$> re """(「|『).+?(」|』)"""
 
 this :: Parser String
-this = const "this" <$> regexParser "吾"
+this = const "this" <$> re "吾"
 
 path :: Parser (Array String)
-path = (:) <$> (quote <|> this) <*> sepBy (regexParser "之" *> quote) ws
+path = (:) <$> (identifier <|> this) <*> sepBy ws (re "之" *> identifier)
 
--- const attrPath = ;
--- const variablePath = Parser.noop().or(() =>
---   Parser.pure((root: any) => (path: string[]) => [root, ...path])
---     .ap(quoted.or(() => self))
---     .ap(attrPath)
--- );
+program :: Parser (Array Instruction)
+program = ws *> sepBy ws instruction <* ws
 
--- function sequence(actions: Eff[]): Eff {
---   return actions.reduce((prev, cur) => prev.bind(() => cur), eff(NOOP));
--- }
+instruction :: Parser Instruction 
+instruction = loadValue
+    <|> loadVariable
+    <|> binaryOperation
+    <|> storeVariable
+    <|> makeNode 
+    <|> setMember
+    <|> call
+    <||> \_ -> register
+    <||> \_ -> selection
 
--- const LoadValue = Parser.noop<Eff>()
---   .or(() =>
---     Parser.pure(LOAD_VAL).apl(r(/有|以/)).ap(quoted.map(Number)).apl(period)
---   )
---   .or(() => Parser.pure(LOAD_VAL).apl(r(/有言/)).ap(quoted).apl(period));
+loadValue :: Parser Instruction
+loadValue = const (LoadVal) <$> re "(有|以)" <*> identifier <* period
+    <|> const (LoadVal <<< quote) <$> re "有言" <*> identifier <* period
+        where quote s = "\"" <> s <> "\""
 
--- const LoadVariable = Parser.noop<Eff>().or(() =>
---   Parser.pure(LOAD_VAR)
---     .apl(r(/(取|夫)(其|彼)?/))
---     .ap(variablePath)
---     .apl(period)
--- );
+loadVariable :: Parser Instruction
+loadVariable = const (LoadRef) <$> re "(取|夫)(其|彼)?" <*> path <* period
 
--- const Operate = Parser.noop<Eff>().or(() =>
---   Parser.pure(OPERATE).ap(quoted).apl(ws).apl(r(/之?/)).apl(period)
--- );
+binaryOperation :: Parser Instruction
+binaryOperation = BinOp <$> identifier <* re "之" <* period
 
--- const StoreVariable = Parser.noop<Eff>()
---   .or(() =>
---     Parser.pure(STORE_VAR)
---       .apl(r(/今/))
---       .ap(variablePath)
---       .apl(r(/如是|亦然/))
---       .apl(period)
---   )
---   .or(() =>
---     Parser.pure(STORE_VAR).apl(r(/是?謂/)).ap(variablePath).apl(period)
---   );
+storeVariable :: Parser Instruction
+storeVariable = const Store <$> re "今" <*> path <* re "(如是|亦然)" <* period
+    <|> const Store <$> re "是?謂" <*> path <* period
 
--- const Block = Parser.noop<Eff>().or(() =>
---   Parser.pure(sequence)
---     .apl(r(/「|『/))
---     .apl(ws)
---     .ap(instruction.sep(ws))
---     .apl(ws)
---     .apl(r(/」|』/))
--- );
+makeNode :: Parser Instruction
+makeNode = const MakeNode <$> re "有此" <*> identifier <* period
 
--- const Conditional = Parser.noop<Eff>()
---   .or(() =>
---     Parser.pure(COND)
---       .apl(r(/然/))
---       .apl(period)
---       .apl(ws)
---       .ap(Block)
---       .apl(ws)
---       .apl(r(/不然/))
---       .apl(period)
---       .apl(ws)
---       .ap(Block)
---   )
---   .or(() =>
---     Parser.pure((alt: Eff) => COND(eff(NOOP))(alt))
---       .apl(r(/不然/))
---       .apl(period)
---       .apl(ws)
---       .ap(Block)
---   )
---   .or(() =>
---     Parser.pure((cons: Eff) => COND(cons)(eff(NOOP)))
---       .apl(r(/然/))
---       .apl(period)
---       .apl(ws)
---       .ap(Block)
---   );
+setMember :: Parser Instruction
+setMember = const SetRef <$> re "其" <*> identifier <* re "者" <* ws <* re "彼" <*> path <* re "也" <* period
+    <|> const SetVal <$> re "其" <*> identifier <* re "也?" <* ws <*> identifier <* period
 
--- const NewNode = Parser.noop<Eff>().or(() =>
---   Parser.pure(NODE).apl(r(/有此/)).ap(quoted).apl(period)
--- );
+block :: Parser (Array Instruction)
+block = noop <||> \_ ->
+    re "「|『" *> ws *> (sepBy ws (instruction)) <* ws <* re "」|』"
 
--- const SetMember = Parser.noop<Eff>()
---   .or(() =>
---     Parser.pure(SET_MEM_VAR)
---       .apl(r(/其/))
---       .ap(quoted)
---       .apl(r(/者/))
---       .apl(ws)
---       .apl(r(/彼/))
---       .ap(variablePath)
---       .apl(r(/也/))
---       .apl(period)
---   )
---   .or(() =>
---     Parser.pure(SET_MEM_VAL)
---       .apl(r(/其/))
---       .ap(quoted)
---       .apl(r(/也?/))
---       .apl(ws)
---       .ap(quoted)
---       .apl(period)
---   );
+selection :: Parser Instruction
+selection = noop <||> \_ ->
+    const Select <$> re "然" <* period <* ws <*> block <* ws <* re "不然" <* period <*> block
+        <|> const (flip Select []) <$> re "然" <* period <*> block
+        <|> const (Select []) <$> re "不然" <* period <*> block
 
--- const MessageDefinition = Parser.noop<Eff>().or(() =>
---   Parser.pure(MSG_DEF)
---     .apl(r(/聞/))
---     .ap(quoted)
---     .apl(r(/則答曰/))
---     .ap(Block)
--- );
+register :: Parser Instruction
+register = noop <||> \_ ->
+    const Register <$> re "聞" <*> identifier <* re "則答曰" <*> block
 
--- const MessageSend = Parser.noop<Eff>()
---   .or(() =>
---     Parser.pure(MSG_SEND)
---       .apl(r(/願彼?/))
---       .ap(variablePath)
---       .ap(quoted)
---       .apl(r(/之/))
---       .apl(period)
---   )
---   .or(() =>
---     Parser.pure(MSG_SEND)
---       .apl(r(/彼/))
---       .ap(variablePath)
---       .apl(r(/其/))
---       .ap(quoted)
---       .apl(r(/者何/))
---       .apl(period)
---   )
---   .or(() =>
---     Parser.pure(MSG_SEND(["__self__"]))
---       .apl(r(/吾(欲|當)/))
---       .ap(quoted)
---       .apl(r(/之?/))
---       .apl(period)
---   )
---   .or(() =>
---     Parser.pure(MSG_SEND(["window"]))
---       .apl(r(/請/))
---       .apl(ws)
---       .ap(quoted)
---       .apl(r(/之/))
---       .apl(period)
---   );
-
--- const instruction = Parser.noop<Eff>()
---   .or(() => Block)
---   .or(() => Conditional)
---   .or(() => MessageDefinition)
---   .or(() => MessageSend)
---   .or(() => LoadVariable)
---   .or(() => LoadValue)
---   .or(() => NewNode)
---   .or(() => Operate)
---   .or(() => StoreVariable)
---   .or(() => SetMember);
-
--- export const program = Parser.pure(sequence)
---   .apl(ws)
---   .ap(instruction.sep(ws))
---   .apl(ws);
+call :: Parser Instruction
+call = const Call <$> re "願彼?" <*> path <*> identifier <* re "之?" <* period
+    <|> const Call <$> re "彼" <*> path <* re "其" <*> identifier <* re "者何" <* period
+    <|> const (Call ["this"]) <$> re "吾(欲|當)" <*> identifier <* re "之?" <* period
+    <|> const (Call ["globalThis"]) <$> re "請" <*> identifier <* re "之?" <* period

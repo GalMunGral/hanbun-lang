@@ -1,9 +1,0 @@
-{
-  "compilerOptions": {
-    "target": "ESNext", 
-    "module": "ESNext",
-    "outDir": "./dist/hanbun-lang",
-    "rootDir": "./src",
-    "esModuleInterop": true,
-  },
-}
