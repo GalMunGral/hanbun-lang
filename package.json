@@ -7,7 +7,7 @@
     "prettier": "^2.5.1"
   },
   "scripts": {
-    "build": "spago build && parcel build src/demo/index.html --dist-dir docs --public-url hanbun-lang",
+    "build": "spago build && parcel build src/demo/index.html --dist-dir docs --public-url .",
     "format": "for f in src/*.purs; do purty --write $f; done && prettier --write src"
   },
   "author": "Wenqi He",
