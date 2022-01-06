@@ -6,16 +6,10 @@ globalThis.cloneNode = (node) => node.cloneNode(true);
 globalThis.append = (parent, child) => parent.append(child);
 
 function debug(...args) {
-  // console.log([...stack]);
-  // console.log([...context]);
-  // console.log(...args);
+  // console.debug([...stack]);
+  // console.debug([...context]);
+  // console.debug(...args);
 }
-
-exports.debug = (next) => {
-  console.log(...stack);
-  console.log(...context);
-  return next();
-};
 
 exports.select = (branch1, branch2) => {
   debug("[select]");
