@@ -1,4 +1,7 @@
 node_modules/
-dist/*
-!dist/index.html
+.spago/
+.purs-repl
+.psc-ide-port
+output
+.parcel-cache/
 .DS_Store

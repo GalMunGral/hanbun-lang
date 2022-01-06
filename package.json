@@ -2,18 +2,14 @@
   "name": "parser-combinator-tutorial",
   "version": "1.0.0",
   "description": "",
-  "main": "index.ts",
-  "type": "module",
   "devDependencies": {
-    "@types/node": "^16.4.12",
-    "prettier": "^2.5.1",
-    "serve": "^12.0.0",
-    "typescript": "^4.3.5"
+    "parcel": "^2.1.0",
+    "purty": "^7.0.0",
+    "prettier": "^2.5.1"
   },
   "scripts": {
-    "dev": "tsc --watch --outDir docs",
-    "build": "tsc",
-    "format": "prettier --write src"
+    "build": "spago build && parcel build src/demo/index.html --dist-dir demo",
+    "format": "for f in src/*.purs; do purty --write $f; done && prettier --write src"
   },
   "repository": {
     "type": "git",
