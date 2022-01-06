@@ -8,7 +8,7 @@
     "prettier": "^2.5.1"
   },
   "scripts": {
-    "build": "spago build && parcel build src/demo/index.html --dist-dir demo",
+    "build": "spago build && parcel build src/demo/index.html --dist-dir docs",
     "format": "for f in src/*.purs; do purty --write $f; done && prettier --write src"
   },
   "repository": {
