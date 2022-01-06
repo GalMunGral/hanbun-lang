@@ -1,14 +1,12 @@
 module Machine where
 
 import Prelude
-
-import Control.Monad.Except (Except, throwError)
+import Control.Monad.Except (throwError)
 import Data.Either (Either(..))
 import Data.Function.Uncurried (Fn2, Fn3, Fn4, runFn1, runFn2, runFn3, runFn4)
 import Effect.Class.Console (log)
 import Effect.Unsafe (unsafePerformEffect)
 import Freer (Eff, run)
-
 
 type Operation = Either String Unit
 type Block = Eff Instruction Unit Unit

@@ -12,7 +12,9 @@ to generate this file without the comments in this block.
 -}
 { name = "my-project"
 , dependencies =
-  [ "console"
+  [ "arrays"
+  , "console"
+  , "control"
   , "effect"
   , "either"
   , "foreign"
@@ -24,6 +26,7 @@ to generate this file without the comments in this block.
   , "newtype"
   , "prelude"
   , "psci-support"
+  , "strings"
   , "transformers"
   , "typelevel-prelude"
   ]
