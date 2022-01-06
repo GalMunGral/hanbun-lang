@@ -4,6 +4,8 @@ var context = [globalThis];
 globalThis.log = (arg) => console.log(arg);
 globalThis.cloneNode = (node) => node.cloneNode(true);
 globalThis.append = (parent, child) => parent.append(child);
+globalThis.delay = (fn, timeout) => setTimeout(fn, timeout);
+globalThis.cancel = (d) => clearTimeout(d);
 
 function debug(...args) {
   // console.debug([...stack]);
