@@ -1,11 +1,15 @@
 var stack = [];
 var context = [globalThis];
 
-globalThis.log = (arg) => console.log(arg);
-globalThis.cloneNode = (node) => node.cloneNode(true);
-globalThis.append = (parent, child) => parent.append(child);
-globalThis.delay = (fn, timeout) => setTimeout(fn, timeout);
-globalThis.cancel = (d) => clearTimeout(d);
+globalThis["錄"] = (arg) => console.log(arg);
+globalThis["模"] = (node) => node.cloneNode(true);
+globalThis["接"] = (parent, child) => parent.append(child);
+globalThis["為"] = (fn, timeout) => setTimeout(fn, timeout);
+globalThis["止"] = (d) => clearTimeout(d);
+globalThis["尋"] = (s) => document.querySelector(s);
+globalThis["繪"] = (fn) => requestAnimationFrame(fn);
+globalThis["世"] = globalThis;
+globalThis["取一數"] = () => Math.random();
 
 function debug(...args) {
   // console.debug([...stack]);
@@ -57,19 +61,19 @@ exports.binOp = (op, left, right) => {
       case "==":
         stack.push(lVal === rVal);
         return right();
-      case "+":
+      case "加":
         stack.push(lVal + rVal);
         return right();
-      case "-":
+      case "減":
         stack.push(lVal - rVal);
         return right();
-      case "*":
+      case "乘":
         stack.push(lVal * rVal);
         return right();
-      case "/":
+      case "除":
         stack.push(lVal / rVal);
         return right();
-      case "**":
+      case "冪":
         let res = 1;
         for (let i = 0; i < rVal; ++i) res *= lVal;
         stack.push(res);
@@ -137,7 +141,7 @@ exports.register = (message, fn, left, right) => {
   const handler = (arg) => {
     // handler.length == 1
     const index = stack.length;
-    context.push({ this: target, globalThis });
+    context.push({ ["吾"]: target, ["世"]: globalThis });
     stack.push(arg);
     fn.call();
     const res = stack[index];

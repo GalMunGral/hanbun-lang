@@ -18,7 +18,7 @@ identifier :: Parser String
 identifier = fromMaybe "" <<< slice 1 (-1) <$> re """(「|『).+?(」|』)"""
 
 this :: Parser String
-this = const "this" <$> re "吾"
+this = re "吾"
 
 path :: Parser (Array String)
 path = (:) <$> (identifier <|> this) <*> sepBy ws (re "之" *> identifier)
@@ -112,12 +112,12 @@ call =
       <*> identifier
       <* re "者何"
       <* period
-    <|> const (Call [ "this" ])
+    <|> const (Call [ "吾" ])
       <$> re "吾(欲|當)"
       <*> identifier
       <* re "之?"
       <* period
-    <|> const (Call [ "globalThis" ])
+    <|> const (Call [ "世" ])
       <$> re "請"
       <*> identifier
       <* re "之?"
