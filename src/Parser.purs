@@ -1,15 +1,12 @@
 module Parser where
 
 import Prelude
-import Control.Alternative (class Alt, (<|>))
+import Control.Alternative (class Alt)
 import Data.Array ((!!), (:))
 import Data.Array.NonEmpty (toArray)
-import Data.Array.NonEmpty.Internal (NonEmptyArray(..))
-import Data.Either (Either)
-import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Maybe (Maybe(..))
 import Data.String (drop, length)
-import Data.String.CodeUnits (slice)
-import Data.String.Regex (Regex, match, regex)
+import Data.String.Regex (match)
 import Data.String.Regex.Flags (noFlags)
 import Data.String.Regex.Unsafe (unsafeRegex)
 
