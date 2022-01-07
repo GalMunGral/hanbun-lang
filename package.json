@@ -3,12 +3,12 @@
   "version": "1.0.0",
   "devDependencies": {
     "parcel": "^2.1.0",
-    "purty": "^7.0.0",
-    "prettier": "^2.5.1"
+    "prettier": "^2.5.1",
+    "purs-tidy": "^0.6.4"
   },
   "scripts": {
-    "build": "spago build && parcel build src/demo/index.html --dist-dir docs --public-url .",
-    "format": "for f in src/*.purs; do purty --write $f; done && prettier --write src"
+    "format": "purs-tidy format-in-place src/**/*.purs && prettier --write src/**/*.js",
+    "docs:build": "spago build && parcel build src/demo/index.html --dist-dir docs --public-url ."
   },
   "author": "Wenqi He",
   "license": "ISC"

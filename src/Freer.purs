@@ -5,8 +5,7 @@ import Data.Either (Either(..))
 import Effect.Class.Console (logShow)
 import Effect.Unsafe (unsafePerformEffect)
 
-data F e a b
-  = F (e) (a -> b)
+data F e a b = F (e) (a -> b)
 
 instance showF :: Show e => Show (F e a b) where
   show (F e _) = "F(" <> show e <> ")"

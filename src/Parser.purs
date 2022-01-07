@@ -34,8 +34,7 @@ instance resBind :: Bind Res where
   bind (Ok a _) f = f a
   bind (Err e next) _ = Err e next
 
-newtype Parser a
-  = Parser { runParser :: String -> Res a }
+newtype Parser a = Parser { runParser :: String -> Res a }
 
 noop :: forall a. Parser a
 noop = Parser { runParser: \s -> Err "" s }

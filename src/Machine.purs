@@ -8,11 +8,9 @@ import Effect.Class.Console (log)
 import Effect.Unsafe (unsafePerformEffect)
 import Freer (Eff, eff, unsafeRun)
 
-type Operation
-  = Either String Unit
+type Operation = Either String Unit
 
-type Block
-  = Eff Instruction Unit Unit
+type Block = Eff Instruction Unit Unit
 
 data Instruction
   = Noop
