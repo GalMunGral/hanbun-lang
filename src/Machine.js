@@ -1,5 +1,5 @@
-var stack = [];
-var context = [globalThis];
+const stack = [];
+const context = [globalThis];
 
 globalThis["錄"] = (arg) => console.log(arg);
 globalThis["模"] = (node) => node.cloneNode(true);
@@ -17,13 +17,13 @@ function debug(...args) {
   // console.debug(...args);
 }
 
-exports.select = (branch1, branch2) => {
+export const select = (branch1, branch2) => {
   debug("[select]");
   if (!stack.length) return left("stack is empty");
   return stack.pop() ? branch1() : branch2();
 };
 
-exports.loadVal = (json, left, right) => {
+export const loadVal = (json, left, right) => {
   debug("[loadVal]", json);
   return makeVal(json, left, (val) => {
     stack.push(val);
@@ -31,7 +31,7 @@ exports.loadVal = (json, left, right) => {
   });
 };
 
-exports.loadRef = (path, left, right) => {
+export const loadRef = (path, left, right) => {
   debug("[loadRef]", path);
   return lookup(path, left, (val) => {
     stack.push(val);
@@ -39,7 +39,7 @@ exports.loadRef = (path, left, right) => {
   });
 };
 
-exports.binOp = (op, left, right) => {
+export const binOp = (op, left, right) => {
   debug("[binOp]", op);
   if (stack.length < 2) return left("not enough operands");
   const rVal = stack.pop();
@@ -86,7 +86,7 @@ exports.binOp = (op, left, right) => {
   }
 };
 
-exports.store = (path, left, right) => {
+export const store = (path, left, right) => {
   debug("[store]", path);
   if (!stack.length) return left("stack is empty");
   const root = context[context.length - 1];
@@ -94,7 +94,7 @@ exports.store = (path, left, right) => {
   return update(root, path, val, left, right);
 };
 
-exports.setVal = (key, json, left, right) => {
+export const setVal = (key, json, left, right) => {
   debug("[setVal]", key, json);
   if (!stack.length) return left("stack is empty");
   return makeVal(json, left, (val) => {
@@ -102,7 +102,7 @@ exports.setVal = (key, json, left, right) => {
   });
 };
 
-exports.setRef = (key, ref, left, right) => {
+export const setRef = (key, ref, left, right) => {
   debug("[setRef]", key, ref);
   if (!stack.length) return left("stack is empty");
   return lookup(ref, left, (val) => {
@@ -110,7 +110,7 @@ exports.setRef = (key, ref, left, right) => {
   });
 };
 
-exports.makeNode = (tag, left, right) => {
+export const makeNode = (tag, left, right) => {
   debug("[makeNode]", tag);
   try {
     let node;
@@ -134,7 +134,7 @@ exports.makeNode = (tag, left, right) => {
   }
 };
 
-exports.register = (message, fn, left, right) => {
+export const register = (message, fn, left, right) => {
   debug("[register]", message);
   if (!stack.length) return left("stack is empty");
   const target = stack[stack.length - 1];
@@ -153,7 +153,7 @@ exports.register = (message, fn, left, right) => {
   return right();
 };
 
-exports.call = (path, message, left, right) => {
+export const call = (path, message, left, right) => {
   debug("[call]", path, message);
   return lookup(path, left, (target) => {
     const fn = target[message];

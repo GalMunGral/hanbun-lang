@@ -1,7 +1,8 @@
 node_modules/
+output/
+dist/
 .spago/
 .purs-repl
 .psc-ide-port
-output
 .parcel-cache/
 .DS_Store

@@ -3,7 +3,6 @@ module Syntax where
 import Prelude
 import Control.Alt ((<|>))
 import Data.Array ((:))
-import Data.Maybe (fromMaybe)
 import Data.String.CodeUnits (slice)
 import Machine (Instruction(..))
 import Parser (Parser, noop, re, sepBy, (<||>))
@@ -15,7 +14,7 @@ period :: Parser String
 period = re """\s*(。?)\s*"""
 
 identifier :: Parser String
-identifier = fromMaybe "" <<< slice 1 (-1) <$> re """(「|『).+?(」|』)"""
+identifier = slice 1 (-1) <$> re """(「|『).+?(」|』)"""
 
 this :: Parser String
 this = re "吾"
@@ -28,13 +27,13 @@ program = ws *> sepBy ws instruction <* ws
 
 instruction :: Parser Instruction
 instruction =
-  loadValue
+  (loadValue
     <|> loadVariable
     <|> binaryOperation
     <|> storeVariable
     <|> makeNode
     <|> setMember
-    <|> call
+    <|> call)
       <||> (\_ -> register)
       <||> (\_ -> selection)
 
