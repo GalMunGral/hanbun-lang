@@ -1,4 +1,4 @@
-# 漢文 HANBUN
+# 漢文 KANBUN
 
 **Live demo:** https://galmungral.github.io/hanbun-lang/
 
@@ -12,19 +12,19 @@ Programming language syntax is conventionally modeled on English, but this is a 
 
 Classical Chinese was chosen for two reasons. First, its grammar is minimal: it is an isolating language with no morphological inflection. Second, its writing system is logographic — each character encodes a morpheme, so every concept is represented by exactly one character. The second property requires a qualification: it holds for Classical Chinese specifically, not for the language in its modern form, which employs multi-character compound words for most concepts. It is, however, precisely this classical form that has full modern input method support, as it shares its character set with Modern Chinese and thereby inherits the CJK input infrastructure built for it.
 
-The language is stack-based: 之, which in Classical Chinese refers to the most recently mentioned subject, maps directly onto the top of the stack. The table below presents each construct alongside its Chinese meaning and its formal definition.
+Classical Chinese does not have nested clauses; the only nesting mechanism is quotation. The language reflects this: instructions are flat and sequential, with no recursive expressions — only recursive control constructs. The result resembles high-level assembly. The language is stack-based: 之, which in Classical Chinese refers to the most recently mentioned subject, maps directly onto the top of the stack. Similarly, 其, meaning "its", maps onto the current scope object. Both are pronouns whose natural referents correspond exactly to runtime concepts. The table below presents each construct alongside its Chinese meaning and its formal definition.
 
 | Construct | Chinese meaning | Formal semantics |
 |-----------|-----------------|-----------------|
 | `以「x」` | with "x" | push literal "x" |
 | `有「x」` | there exists "x" | push literal "x" |
-| `取其「x」` | take its "x" | push variable "x" |
+| `取其「x」` | take its "x" | push member "x" of current scope |
 | `「op」之` | apply "op" to it | pop two operands, apply "op", push result |
-| `謂「x」` | call it "x" | pop and assign to "x" |
-| `有此「x」` | there is this "x" | create object, bind to "x" |
-| `其「f」也「v」` | its "f" is "v" | set member "f" to literal "v" |
-| `其「f」者彼「x」` | its "f" is that "x" | set member "f" to variable "x" |
-| `聞「m」則答曰「p」` | upon hearing "m", then answer with "p" | define handler for message "m" with body "p" |
+| `謂「x」` | call it "x" | pop and store as "x" in current scope |
+| `有此「x」` | there is this "x" | push new element with tag "x" |
+| `其「f」也「v」` | its "f" is "v" | set member "f" of top of stack to literal "v" |
+| `其「f」者彼「x」` | its "f" is that "x" | set member "f" of top of stack to "x" from current scope |
+| `聞「m」則答曰「p」` | upon hearing "m", then answer with "p" | attach handler "p" for message "m" on top of stack |
 | `願彼「x」「m」` | request that "x" does "m" | send message "m" to "x" |
 | `然「p」不然「q」` | if so "p", if not so "q" | if condition then "p" else "q" |
 
@@ -44,7 +44,7 @@ The following example defines a factorial function. Each line is annotated with 
 」
 ```
 
-The implementation is written in PureScript using parser combinators. The runtime is in JavaScript: objects are plain JS objects or DOM elements, and message sending is property lookup followed by a function call.
+The live demo is driven entirely by a program written in the language itself. The source text of that program is displayed in the background, typeset in the order Classical Chinese is written: right to left, top to bottom.
 
 ```
 <quote> ::= 「{<char>}」
