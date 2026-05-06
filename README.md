@@ -1,6 +1,6 @@
 # 漢文 KANBUN
 
-**Live demo:** https://galmungral.github.io/hanbun-lang/
+**Live demo:** https://galmungral.github.io/kanbun-lang/
 
 ## Rhetorical Design
 
@@ -31,17 +31,17 @@ Classical Chinese does not have nested clauses; the only nesting mechanism is qu
 The following example defines a factorial function. Each line is annotated with its natural language reading:
 
 ```
-夫「window」                        — take that "window"
-聞「階乘」則答曰「                  — upon hearing "factorial", answer with:
-  是謂『數』                        —   call it "number"
-  取其『數』以『2』『<』之          —   take its "number", with "2", apply "<" to it
-  然『 取其「數」』                 —   if so: take its "number"
-  不然『                            —   if not so:
-    取其「數」以「1」「-」之        —     take its "number", with "1", apply "-" to it
-    吾當「階乘」之                  —     I shall do "factorial" to it
-    取其「數」「*」之               —     take its "number", apply "*" to it
-  』
-」
+as for "window"                                     夫「window」
+upon hearing "factorial", answer with:              聞「階乘」則答曰「
+  call it "number"                                    是謂『數』
+  take its "number", with "2", apply "<" to it        取其『數』以『2』『<』之
+  if so: take its "number"                            然『 取其「數」』
+  if not so:                                          不然『
+    take its "number", with "1", apply "-" to it        取其「數」以「1」「-」之
+    I shall do "factorial" to it                        吾當「階乘」之
+    take its "number", apply "*" to it                  取其「數」「*」之
+                                                      』
+                                                    」
 ```
 
 The live demo is driven entirely by a program written in the language itself. The source text of that program is displayed in the background, typeset in the order Classical Chinese is written: right to left, top to bottom.
