@@ -10,9 +10,9 @@ Programming language syntax is conventionally modeled on English, but this is a 
 
 ### Strategy
 
-Classical Chinese was chosen for two reasons. Its grammar is minimal — it is an isolating language with no morphological inflection. Its writing system is logographic: each character encodes a morpheme, so every concept is expressed as exactly one character, without exception. Modern Chinese does not have this guarantee, as most concepts require multi-character compound words; Classical Chinese does, because it was designed to be read rather than spoken.
+Classical Chinese was chosen for two reasons. First, its grammar is minimal: it is an isolating language with no morphological inflection. Second, its writing system is logographic — each character encodes a morpheme, so every concept is represented by exactly one character. The second property requires a qualification: it holds for Classical Chinese specifically, not for the language in its modern form, which employs multi-character compound words for most concepts. It is, however, precisely this classical form that has full modern input method support, as it shares its character set with Modern Chinese and thereby inherits the CJK input infrastructure built for it.
 
-The language is stack-based, a consequence of the central role of 之. In Classical Chinese, 之 is a pronoun meaning "it" — referring to the most recently mentioned subject. The top of the stack is precisely the most recently produced value, so the stack model follows directly from the pronoun's semantics. The translation table presents each construct alongside its Chinese meaning and its formal definition, keeping both layers visible.
+The language is stack-based: 之, which in Classical Chinese refers to the most recently mentioned subject, maps directly onto the top of the stack. The table below presents each construct alongside its Chinese meaning and its formal definition.
 
 | Construct | Chinese meaning | Formal semantics |
 |-----------|-----------------|-----------------|
